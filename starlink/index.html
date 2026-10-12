@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starlink Network Study Guide</title>
+<style>
+:root {
+  --bg:#0f1419; --bg-elevated:#1a2332; --bg-card:#1e2a3a; --bg-hover:#243044;
+  --border:#2d3a4f; --text:#e8eef6; --text-muted:#8b9cb3;
+  --accent:#3b9eff; --accent-soft:rgba(59,158,255,.15);
+  --success:#3dd68c; --success-soft:rgba(61,214,140,.15);
+  --warning:#f5a623; --warning-soft:rgba(245,166,35,.15);
+  --danger:#f56565; --danger-soft:rgba(245,101,101,.15);
+  --locked:#4a5568; --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.35);
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"SF Mono","Cascadia Code",Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:var(--bg-elevated);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1rem}
+.sidebar-brand{padding:.5rem .75rem 1rem;border-bottom:1px solid var(--border)}
+.sidebar-brand h1{font-size:1.05rem;font-weight:700;line-height:1.3}
+.sidebar-brand .subtitle{font-size:.75rem;color:var(--text-muted);margin-top:.25rem}
+.progress-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.progress-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem}
+.progress-label strong{color:var(--accent)}
+.progress-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#6bc1ff);border-radius:4px;transition:width .4s ease;width:0%}
+.module-nav{list-style:none;display:flex;flex-direction:column;gap:.35rem;flex:1}
+.module-nav-item{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text-muted);border:1px solid transparent;transition:all .15s;user-select:none}
+.module-nav-item:hover:not(.locked){background:var(--bg-hover);color:var(--text)}
+.module-nav-item.active{background:var(--accent-soft);color:var(--accent);border-color:rgba(59,158,255,.3)}
+.module-nav-item.completed{color:var(--success)}
+.module-nav-item.locked{opacity:.45;cursor:not-allowed}
+.nav-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;background:var(--border);color:var(--text-muted)}
+.module-nav-item.active .nav-icon{background:var(--accent);color:#fff}
+.module-nav-item.completed .nav-icon{background:var(--success);color:#0f1419}
+.module-nav-item.locked .nav-icon{background:var(--locked)}
+.sidebar-actions{padding-top:.75rem;border-top:1px solid var(--border)}
+.btn-reset{width:100%;padding:.55rem;background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.8rem;transition:all .15s}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.main{padding:2rem 2.5rem 4rem;max-width:820px;width:100%;margin:0 auto}
+.mobile-header{display:none;background:var(--bg-elevated);border-bottom:1px solid var(--border);padding:.75rem 1rem;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.mobile-header h1{font-size:.95rem;font-weight:700}
+.hamburger{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:.4rem .7rem;border-radius:6px;cursor:pointer;font-size:1.1rem}
+.welcome{text-align:center;padding:3rem 1rem}
+.welcome h2{font-size:1.85rem;margin-bottom:.75rem;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.welcome p{color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem}
+.module-header{margin-bottom:1.75rem}
+.module-badge{display:inline-block;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);background:var(--accent-soft);padding:.25rem .65rem;border-radius:20px;margin-bottom:.75rem}
+.module-header h2{font-size:1.65rem;font-weight:700;margin-bottom:.4rem}
+.module-header .desc{color:var(--text-muted);font-size:.95rem}
+.content-section{margin-bottom:1.75rem}
+.content-section h3{font-size:1.15rem;margin-bottom:.65rem}
+.content-section p{margin-bottom:.85rem}
+.content-section ul,.content-section ol{margin:.5rem 0 1rem 1.4rem}
+.content-section li{margin-bottom:.4rem}
+.takeaway{background:var(--success-soft);border:1px solid rgba(61,214,140,.35);border-left:4px solid var(--success);border-radius:8px;padding:1rem 1.15rem;margin:1.5rem 0}
+.takeaway strong{color:var(--success);display:block;margin-bottom:.3rem;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em}
+.diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin:1.25rem 0;overflow-x:auto}
+.diagram svg{display:block;margin:0 auto;max-width:100%}
+.diagram-caption{text-align:center;font-size:.8rem;color:var(--text-muted);margin-top:.75rem}
+.code-block{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem;font-family:var(--mono);font-size:.85rem;overflow-x:auto;margin:1rem 0;color:#a8c0d8;white-space:pre;line-height:1.5}
+.callout{background:var(--accent-soft);border:1px solid rgba(59,158,255,.3);border-radius:8px;padding:.9rem 1.1rem;margin:1rem 0;font-size:.92rem}
+.callout.warning{background:var(--warning-soft);border-color:rgba(245,166,35,.35)}
+.quiz-section{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:2rem}
+.quiz-section h3{font-size:1.2rem;margin-bottom:.35rem}
+.quiz-meta{font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem}
+.question{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.15rem;margin-bottom:1rem}
+.question.answered-correct{border-color:rgba(61,214,140,.5)}
+.question.answered-wrong{border-color:rgba(245,101,101,.5)}
+.question-text{font-weight:600;margin-bottom:.85rem;font-size:.95rem}
+.options{display:flex;flex-direction:column;gap:.45rem}
+.option{display:flex;align-items:flex-start;gap:.65rem;padding:.65rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:.9rem}
+.option:hover:not(.disabled){border-color:var(--accent);background:var(--accent-soft)}
+.option.selected{border-color:var(--accent);background:var(--accent-soft)}
+.option.correct{border-color:var(--success);background:var(--success-soft)}
+.option.incorrect{border-color:var(--danger);background:var(--danger-soft)}
+.option.disabled{cursor:default}
+.option input{margin-top:.2rem;accent-color:var(--accent)}
+.explanation{margin-top:.75rem;padding:.75rem;border-radius:6px;font-size:.88rem;display:none}
+.explanation.show{display:block}
+.explanation.correct-exp{background:var(--success-soft);color:var(--success)}
+.explanation.wrong-exp{background:var(--danger-soft);color:#fca5a5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.65rem 1.25rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#2b8eef}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:var(--bg-card);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg-hover)}
+.btn-success{background:var(--success);color:#0f1419}
+.btn-success:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(1.1)}
+.quiz-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+.score-panel{text-align:center;padding:1.5rem;margin-top:1rem;border-radius:var(--radius);display:none}
+.score-panel.show{display:block}
+.score-panel.pass{background:var(--success-soft);border:1px solid rgba(61,214,140,.4)}
+.score-panel.fail{background:var(--warning-soft);border:1px solid rgba(245,166,35,.4)}
+.score-panel .score-num{font-size:2.5rem;font-weight:800;margin-bottom:.25rem}
+.score-panel.pass .score-num{color:var(--success)}
+.score-panel.fail .score-num{color:var(--warning)}
+.nav-buttons{display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90}
+.sidebar-overlay.open{display:block}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;max-width:400px;width:100%;box-shadow:var(--shadow)}
+.modal h3{margin-bottom:.65rem}
+.modal p{color:var(--text-muted);margin-bottom:1.25rem;font-size:.92rem}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end}
+.hidden{display:none!important}
+.tag{display:inline-block;font-size:.75rem;padding:.15rem .5rem;border-radius:4px;background:var(--bg);border:1px solid var(--border);font-family:var(--mono);color:var(--accent)}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;z-index:100;width:280px;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-header{display:flex}
+  .main{padding:1.25rem 1rem 3rem}
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-header">
+  <h1>Starlink Network Study Guide</h1>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h1>Starlink Network Study Guide</h1>
+      <div class="subtitle">Interactive Study Guide</div>
+    </div>
+    <div class="progress-panel">
+      <div class="progress-label">
+        <span>Module <strong id="progCurrent">0</strong> of <strong id="progTotal">10</strong></span>
+        <span><strong id="progPct">0</strong>%</span>
+      </div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progBar"></div></div>
+    </div>
+    <ul class="module-nav" id="moduleNav"></ul>
+    <div class="sidebar-actions">
+      <button class="btn-reset" id="resetBtn">Reset Progress</button>
+    </div>
+  </aside>
+  <main class="main" id="mainContent"></main>
+</div>
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>Reset all progress?</h3>
+    <p>This will lock all modules again and clear your quiz scores. You can’t undo this.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="resetCancel">Cancel</button>
+      <button class="btn btn-danger" id="resetConfirm">Reset</button>
+    </div>
+  </div>
+</div>
+<script>
+
+const STORAGE_KEY = 'starlinkStudyGuide_v1';
+const PASS_THRESHOLD = 0.7;
+const MODULES = [{"id": "m1", "title": "Why Starlink Exists", "short": "Why Starlink", "desc": "Rural/remote connectivity, ISP alternatives, and why LEO latency beats classic satellite intuition.", "content": "\n      <div class=\"content-section\">\n        <h3>The problem Starlink targets</h3>\n        <p>Many people live where fiber, cable, or even decent DSL never arrived — farms, mountains, islands, RV parks, job sites. Traditional options are slow, expensive, capped, or simply unavailable. <strong>Starlink</strong> is SpaceX’s satellite internet service built to fill that gap with broadband from space.</p>\n        <p>It is still an <strong>ISP</strong> (Internet Service Provider): you pay for connectivity; your home LAN plugs into their wide-area network. The difference is the “last mile” is a radio link to orbit instead of a buried cable.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>LEO vs GEO — latency intuition</h3>\n        <p>Older consumer satellite internet often used <strong>GEO</strong> (geostationary) birds ~36,000 km above the equator. Light (and radio) has to climb that distance and come back — roughly a half-second round trip before you add processing. That feels laggy for video calls and games.</p>\n        <p><strong>LEO</strong> (Low Earth Orbit) satellites fly much closer — Starlink’s user satellites are roughly <strong>~550 km</strong> up. Shorter path → much lower delay. Typical Starlink latency is often in the tens of milliseconds range (varies with load, path, and weather), far closer to terrestrial broadband than classic GEO satellite.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 220\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"220\">\n            <ellipse cx=\"260\" cy=\"200\" rx=\"200\" ry=\"28\" fill=\"#1e2a3a\" stroke=\"#2d3a4f\"/>\n            <text x=\"260\" y=\"205\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">Earth</text>\n            <circle cx=\"260\" cy=\"155\" r=\"10\" fill=\"#3b9eff\"/>\n            <text x=\"280\" y=\"150\" fill=\"#3b9eff\" font-size=\"11\" font-family=\"system-ui\">LEO ~550 km</text>\n            <circle cx=\"260\" cy=\"45\" r=\"14\" fill=\"#a78bfa\"/>\n            <text x=\"285\" y=\"42\" fill=\"#a78bfa\" font-size=\"11\" font-family=\"system-ui\">GEO ~36,000 km</text>\n            <line x1=\"260\" y1=\"190\" x2=\"260\" y2=\"165\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <line x1=\"260\" y1=\"190\" x2=\"260\" y2=\"59\" stroke=\"#a78bfa\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/>\n            <text x=\"140\" y=\"100\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">Shorter hop = lower latency</text>\n          </svg>\n          <div class=\"diagram-caption\">Distance dominates delay: LEO is ~65× closer than GEO</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>What “alternative ISP” means for you</h3>\n        <ul>\n          <li>Same mental model as cable/fiber: router → ISP → public Internet</li>\n          <li>Different physics: moving satellites, sky view, weather fade</li>\n          <li>Different addressing defaults (CGNAT IPv4, strong IPv6) — covered later</li>\n        </ul>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Starlink exists to bring broadband where wires don’t. LEO (~550 km) cuts latency vs GEO (~36,000 km). Treat it as an ISP whose access link happens to be space radio.</div>\n  ", "questions": [{"q": "What problem does Starlink primarily address?", "options": ["Replacing Wi‑Fi inside a single room", "Broadband for places poorly served by terrestrial ISPs", "Only military encryption keys", "Making Ethernet cables obsolete indoors"], "answer": 1, "explain": "Starlink targets rural/remote and underserved connectivity as an ISP alternative."}, {"q": "Roughly how high are Starlink’s user LEO satellites?", "options": ["~36,000 km", "~550 km", "~1 meter above the roof", "~Geostationary parking orbit only"], "answer": 1, "explain": "Starlink user sats are in LEO around ~550 km — far below GEO."}, {"q": "Why does GEO satellite internet often feel laggy?", "options": ["GEO satellites use only copper", "The huge distance (~36,000 km) adds a large propagation delay", "GEO forbids TCP", "GEO has no IP addresses"], "answer": 1, "explain": "Speed of light over tens of thousands of km each way creates high RTT."}, {"q": "In networking terms, Starlink is best described as:", "options": ["Only a Wi‑Fi extender", "An ISP whose WAN path includes satellites", "A replacement for DNS", "A type of Ethernet switch chip"], "answer": 1, "explain": "Starlink is an Internet Service Provider; the dish is the access link into their network."}]}, {"id": "m2", "title": "LEO Constellation Basics", "short": "LEO constellation", "desc": "Why one satellite isn’t enough: orbits, coverage footprints, and a mesh of moving radios.", "content": "\n      <div class=\"content-section\">\n        <h3>One bird isn’t enough</h3>\n        <p>A single LEO satellite races around Earth in roughly 90 minutes and only “sees” a limited patch of ground at a time (its <strong>footprint</strong>). If that were your only satellite, service would blink on and off. Starlink deploys a <strong>constellation</strong> — thousands of satellites in coordinated orbits — so as one sets, another rises.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Coverage via many moving relays</h3>\n        <ul>\n          <li><strong>Altitude ~550 km</strong> → smaller footprint than GEO, so you need many sats for continuous coverage</li>\n          <li>Satellites are always moving relative to your dish</li>\n          <li>Your terminal <strong>hands over</strong> from sat to sat while keeping sessions alive</li>\n        </ul>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 180\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"180\">\n            <ellipse cx=\"260\" cy=\"150\" rx=\"180\" ry=\"22\" fill=\"#1e2a3a\" stroke=\"#2d3a4f\"/>\n            <text x=\"260\" y=\"154\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">Ground / your dish</text>\n            <circle cx=\"120\" cy=\"50\" r=\"12\" fill=\"#3b9eff\"/><text x=\"120\" y=\"30\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"10\" font-family=\"system-ui\">Sat A</text>\n            <circle cx=\"260\" cy=\"40\" r=\"12\" fill=\"#3dd68c\"/><text x=\"260\" y=\"20\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"10\" font-family=\"system-ui\">Sat B</text>\n            <circle cx=\"400\" cy=\"55\" r=\"12\" fill=\"#a78bfa\"/><text x=\"400\" y=\"35\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"10\" font-family=\"system-ui\">Sat C</text>\n            <path d=\"M260 128 Q190 90 130 60\" fill=\"none\" stroke=\"#3b9eff\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/>\n            <path d=\"M260 128 L260 52\" fill=\"none\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <path d=\"M260 128 Q330 95 390 65\" fill=\"none\" stroke=\"#a78bfa\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/>\n            <text x=\"260\" y=\"175\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">Constellation: continuous coverage via handovers</text>\n          </svg>\n          <div class=\"diagram-caption\">Multiple LEO sats ensure someone is always in view</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Design trade-off</h3>\n        <p>LEO = lower latency + more satellites + active tracking + handovers. GEO = one (or few) fixed birds + high latency. Starlink chose the LEO trade for interactive broadband.</p>\n        <div class=\"callout\">Sky view matters: trees, buildings, and mountains that block the dish’s view of the constellation cause dropouts — an obstruction is a coverage problem at the radio layer.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>LEO sats move and cover small patches; a large constellation + handovers deliver continuous service. Obstructions that hide the sky break the link even if your router is fine.</div>\n  ", "questions": [{"q": "Why does Starlink need many satellites instead of one?", "options": ["One satellite cannot run IP", "Each LEO sat covers a limited area and moves; many are needed for continuous coverage", "FCC requires exactly 10,000 routers", "Wi‑Fi channels only work in space"], "answer": 1, "explain": "LEO footprints are limited and moving — a constellation fills gaps as sats pass."}, {"q": "What is a satellite “footprint”?", "options": ["The physical size of the dish stand", "The ground area a satellite’s radios can serve at a given time", "A type of IPv6 prefix", "SMTP port 25"], "answer": 1, "explain": "Footprint = coverage area on Earth visible/served by that satellite."}, {"q": "What happens as one satellite moves out of view?", "options": ["Your public IP permanently expires forever", "The terminal hands over to another satellite in the constellation", "All TCP connections must use FTP", "The router deletes DNS"], "answer": 1, "explain": "Handovers keep connectivity as sats rise and set relative to the dish."}, {"q": "Trees blocking the dish’s sky view mainly hurt which layer of the path?", "options": ["Only HTTPS certificates", "The radio/user-link to satellites (obstruction)", "Only CGNAT port maps", "Only Ethernet CRC on LAN"], "answer": 1, "explain": "Obstructions block the dish↔satellite radio path — a classic Starlink outage cause."}]}, {"id": "m3", "title": "The User Terminal (Dish)", "short": "User terminal", "desc": "Phased-array dish as a radio bridge: tracking, handovers, and what it is (and isn’t) on the network.", "content": "\n      <div class=\"content-section\">\n        <h3>What the dish actually is</h3>\n        <p>The Starlink <strong>user terminal</strong> (the “dish”) is a flat <strong>phased-array</strong> antenna. Instead of mechanically swiveling a big parabolic dish (though some kits have motors for orientation), it electronically steers beams to track fast-moving LEO satellites.</p>\n        <p>Networking mental model: the dish is mostly a <strong>radio bridge / modem-like access device</strong> on the path between your router and the satellite network. It is <em>not</em> “the Internet” by itself — it is how your site joins Starlink’s WAN.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Tracking &amp; handovers</h3>\n        <ul>\n          <li>Beams follow satellites across the sky</li>\n          <li><strong>Handovers</strong> switch you to the next satellite without you reconfiguring the LAN</li>\n          <li>Sessions (TCP/HTTPS, etc.) typically keep going across handovers</li>\n        </ul>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 480 160\" xmlns=\"http://www.w3.org/2000/svg\" width=\"480\" height=\"160\">\n            <rect x=\"30\" y=\"90\" width=\"90\" height=\"40\" rx=\"6\" fill=\"#1e2a3a\" stroke=\"#8b9cb3\"/>\n            <text x=\"75\" y=\"115\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">Router</text>\n            <line x1=\"120\" y1=\"110\" x2=\"170\" y2=\"110\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <rect x=\"170\" y=\"80\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"225\" y=\"105\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Dish</text>\n            <text x=\"225\" y=\"122\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">phased array</text>\n            <line x1=\"280\" y1=\"100\" x2=\"360\" y2=\"50\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <circle cx=\"380\" cy=\"40\" r=\"16\" fill=\"#243044\" stroke=\"#3b9eff\"/>\n            <text x=\"380\" y=\"44\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">Sat</text>\n            <text x=\"240\" y=\"150\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">LAN side ← dish → Ku-band user link</text>\n          </svg>\n          <div class=\"diagram-caption\">Dish = radio access bridge, not the whole Internet</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Practical notes</h3>\n        <ul>\n          <li>Needs clear view of the sky (obstruction maps in the app)</li>\n          <li>Power + Ethernet (or wireless router kits) toward your LAN</li>\n          <li>Think <strong>L1/L2 / access path</strong> more than “Layer 7 Internet box”</li>\n        </ul>\n        <div class=\"callout warning\">If websites fail but the dish is obstructed or offline, don’t start with DNS theory — fix sky view and terminal status first.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>The dish is a phased-array radio bridge that tracks LEO sats and hands over between them. It joins you to Starlink’s network; your router and the PoP still do classic IP networking.</div>\n  ", "questions": [{"q": "What kind of antenna tech does the Starlink user terminal primarily use?", "options": ["A floppy disk antenna", "A phased-array that electronically steers beams", "Only an AM radio coil", "A single fixed Wi‑Fi dipole for GEO"], "answer": 1, "explain": "Phased arrays steer beams electronically to track moving LEO satellites."}, {"q": "The dish is best described as:", "options": ["The entire public Internet backbone", "A radio bridge/access device between your site and the satellite network", "A DNS root server", "Only a PoE injector with no RF"], "answer": 1, "explain": "It provides the satellite access link — not the whole Internet."}, {"q": "What do handovers accomplish?", "options": ["Deleting your LAN subnet every minute", "Switching to the next satellite while keeping service going", "Changing HTTP into FTP", "Forcing IPv4 off forever"], "answer": 1, "explain": "Handovers move the RF association between sats without ending your sessions."}, {"q": "Your browser fails and the Starlink app shows heavy obstruction. Best first focus?", "options": ["Rewrite BGP on your laptop", "Clear the dish’s sky view / fix terminal link", "Disable IPv6 on every IoT bulb", "Open inbound TCP/445 on CGNAT"], "answer": 1, "explain": "Obstruction is a user-link problem — fix RF/sky before deep IP debugging."}]}, {"id": "m4", "title": "Path of a Packet", "short": "Packet path", "desc": "Follow traffic: device → router → dish → satellite (Ku) → gateway (Ka) or lasers → PoP → Internet.", "content": "\n      <div class=\"content-section\">\n        <h3>End-to-end path (typical)</h3>\n        <ol>\n          <li><strong>Device</strong> on your LAN (phone, PC)</li>\n          <li><strong>Home router</strong> (NAT, Wi‑Fi, firewall)</li>\n          <li><strong>Starlink dish</strong> — user link, usually <strong>Ku-band</strong> radio to a satellite</li>\n          <li><strong>Satellite</strong> — may send you “down” to a ground <strong>gateway</strong> (often <strong>Ka-band</strong> sat↔gateway) or forward via <strong>optical ISLs</strong> toward another sat/gateway</li>\n          <li><strong>Gateway / ground station</strong> lands traffic onto terrestrial fiber</li>\n          <li><strong>PoP (Point of Presence)</strong> — where Starlink peers/routes onto the public Internet</li>\n          <li><strong>Destination</strong> server on the Internet (and reverse for replies)</li>\n        </ol>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 560 200\" xmlns=\"http://www.w3.org/2000/svg\" width=\"560\" height=\"200\">\n            <rect x=\"8\" y=\"120\" width=\"55\" height=\"36\" rx=\"5\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"35\" y=\"142\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">PC</text>\n            <rect x=\"75\" y=\"120\" width=\"55\" height=\"36\" rx=\"5\" fill=\"#1e2a3a\" stroke=\"#3b9eff\"/><text x=\"102\" y=\"142\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"9\" font-family=\"system-ui\">Router</text>\n            <rect x=\"145\" y=\"120\" width=\"55\" height=\"36\" rx=\"5\" fill=\"#1e2a3a\" stroke=\"#3dd68c\"/><text x=\"172\" y=\"142\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"9\" font-family=\"system-ui\">Dish</text>\n            <circle cx=\"250\" cy=\"50\" r=\"18\" fill=\"#243044\" stroke=\"#3b9eff\"/><text x=\"250\" y=\"54\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">Sat</text>\n            <rect x=\"310\" y=\"120\" width=\"70\" height=\"36\" rx=\"5\" fill=\"#1e2a3a\" stroke=\"#f5a623\"/><text x=\"345\" y=\"142\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"9\" font-family=\"system-ui\">Gateway</text>\n            <rect x=\"400\" y=\"120\" width=\"55\" height=\"36\" rx=\"5\" fill=\"#1e2a3a\" stroke=\"#a78bfa\"/><text x=\"427\" y=\"142\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"9\" font-family=\"system-ui\">PoP</text>\n            <rect x=\"475\" y=\"120\" width=\"70\" height=\"36\" rx=\"5\" fill=\"#1e2a3a\" stroke=\"#8b9cb3\"/><text x=\"510\" y=\"142\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">Internet</text>\n            <line x1=\"63\" y1=\"138\" x2=\"75\" y2=\"138\" stroke=\"#8b9cb3\" stroke-width=\"1.5\"/>\n            <line x1=\"130\" y1=\"138\" x2=\"145\" y2=\"138\" stroke=\"#8b9cb3\" stroke-width=\"1.5\"/>\n            <path d=\"M172 120 Q210 80 235 60\" fill=\"none\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n            <text x=\"185\" y=\"85\" fill=\"#3b9eff\" font-size=\"9\" font-family=\"system-ui\">Ku</text>\n            <path d=\"M265 60 Q300 90 345 120\" fill=\"none\" stroke=\"#f5a623\" stroke-width=\"1.5\"/>\n            <text x=\"310\" y=\"85\" fill=\"#f5a623\" font-size=\"9\" font-family=\"system-ui\">Ka</text>\n            <line x1=\"380\" y1=\"138\" x2=\"400\" y2=\"138\" stroke=\"#a78bfa\" stroke-width=\"1.5\"/>\n            <line x1=\"455\" y1=\"138\" x2=\"475\" y2=\"138\" stroke=\"#8b9cb3\" stroke-width=\"1.5\"/>\n          </svg>\n          <div class=\"diagram-caption\">Simplified path: Ku user link, Ka (or lasers) toward gateway, fiber to PoP</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Bands to remember</h3>\n        <ul>\n          <li><strong>Ku-band</strong> — common for the user terminal ↔ satellite link</li>\n          <li><strong>Ka-band</strong> — often used satellite ↔ gateway</li>\n          <li><strong>Optical lasers (ISLs)</strong> — satellite ↔ satellite (next module)</li>\n        </ul>\n        <div class=\"callout\">“Bent-pipe” style: sat relays your traffic down to a nearby gateway. With lasers, traffic can hop in space before landing — useful over oceans.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>A Starlink packet still walks a classic path: LAN → access link → provider network → PoP → Internet. Memorize Ku (user), Ka (gateway), lasers (sat-to-sat).</div>\n  ", "questions": [{"q": "Which band is typically associated with the user dish ↔ satellite link?", "options": ["Only AM radio", "Ku-band", "Only visible light Wi‑Fi", "SMTP on port 25"], "answer": 1, "explain": "User links are commonly Ku-band; gateways often use Ka-band."}, {"q": "Where does Starlink traffic usually enter the public Internet routing world?", "options": ["Inside the phone’s battery", "At a PoP after landing via gateway/fiber", "Only inside the phased array chip", "On port 445 exclusively"], "answer": 1, "explain": "Gateways land onto fiber; PoPs are where peering/transit to the Internet happens."}, {"q": "Correct order for a typical upload path?", "options": ["PoP → dish → PC → sat", "PC → router → dish → sat → gateway → PoP → Internet", "Internet → CGNAT → Wi‑Fi only", "Gateway → dish → GEO only"], "answer": 1, "explain": "Traffic starts on the LAN, goes up via dish/sat, lands at a gateway, then PoP/Internet."}, {"q": "Satellite ↔ gateway links are often described as using:", "options": ["Ka-band", "Only RJ45 into space", "Only Bluetooth LE", "Port 22 exclusively"], "answer": 0, "explain": "Gateway feeder links are commonly Ka-band."}]}, {"id": "m5", "title": "Ground Stations & PoPs", "short": "Gateways & PoPs", "desc": "How gateways land RF onto fiber, and why the PoP is where Internet routing/policy shows up.", "content": "\n      <div class=\"content-section\">\n        <h3>Gateway = landing pad</h3>\n        <p>A <strong>ground station / gateway</strong> has large antennas that talk to satellites (often Ka-band) and connect into terrestrial <strong>fiber</strong>. Your bits leave the space segment and become normal ISP backbone traffic.</p>\n        <p>If no gateway is in range of the satellite serving you — and there is no laser path to another sat that <em>can</em> reach a gateway — you can’t land. That’s why gateway placement and ISLs both matter.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>PoP = where you meet the Internet</h3>\n        <p>A <strong>Point of Presence (PoP)</strong> is a provider location that connects to other networks — peering and transit. From a user’s perspective:</p>\n        <ul>\n          <li>Addressing and routing policy show up around the provider edge / PoP</li>\n          <li>Latency to a website includes: RF path + fiber to PoP + Internet path beyond</li>\n          <li>“Which PoP am I egressing from?” affects traceroute and some geo features</li>\n        </ul>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 500 170\" xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"170\">\n            <circle cx=\"70\" cy=\"50\" r=\"20\" fill=\"#243044\" stroke=\"#3b9eff\"/><text x=\"70\" y=\"54\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">Sat</text>\n            <line x1=\"90\" y1=\"60\" x2=\"150\" y2=\"100\" stroke=\"#f5a623\" stroke-width=\"2\"/>\n            <rect x=\"150\" y=\"85\" width=\"100\" height=\"50\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#f5a623\" stroke-width=\"2\"/>\n            <text x=\"200\" y=\"108\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Gateway</text>\n            <text x=\"200\" y=\"124\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">RF → fiber</text>\n            <line x1=\"250\" y1=\"110\" x2=\"310\" y2=\"110\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <rect x=\"310\" y=\"85\" width=\"80\" height=\"50\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"350\" y=\"115\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">PoP</text>\n            <line x1=\"390\" y1=\"110\" x2=\"450\" y2=\"110\" stroke=\"#8b9cb3\" stroke-width=\"2\"/>\n            <rect x=\"450\" y=\"90\" width=\"40\" height=\"40\" rx=\"6\" fill=\"#243044\" stroke=\"#8b9cb3\"/>\n            <text x=\"470\" y=\"114\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">Net</text>\n          </svg>\n          <div class=\"diagram-caption\">Gateway lands traffic; PoP interconnects with the wider Internet</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Troubleshooting angle</h3>\n        <p>Dish online but odd routing/latency? The space hop may be fine while the <strong>terrestrial egress</strong> (gateway→PoP→peer) is congested or far. Traceroutes often look “weird” on satellite ISPs — expect RF segments not to look like LAN hops.</p>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Gateways convert satellite RF into fiber. PoPs are where Starlink joins the public Internet’s routing fabric. Both sit after the dish in the path.</div>\n  ", "questions": [{"q": "What does a Starlink gateway primarily do?", "options": ["Host your Netflix cache inside the dish", "Land satellite traffic onto terrestrial fiber toward the provider network", "Replace all home Wi‑Fi passwords", "Assign MAC addresses to trees"], "answer": 1, "explain": "Gateways are ground stations that interconnect space links with fiber backhaul."}, {"q": "A PoP is best described as:", "options": ["A point where the provider interconnects/peers toward the Internet", "The plastic stand under the dish", "Only a Ku-band filter", "A private RFC1918 printer VLAN"], "answer": 0, "explain": "Points of Presence are provider edge locations for interconnection and egress."}, {"q": "Why do gateway locations matter?", "options": ["They print boarding passes", "Satellites need a way to land traffic onto the ground network (unless lasers extend reach)", "They set your Wi‑Fi channel to 6 only", "They disable IPv6 by law"], "answer": 1, "explain": "Without a reachable landing path (direct or via ISL), traffic can’t enter the fiber network."}, {"q": "Dish shows online, but latency to websites is high. What else is in the path?", "options": ["Nothing — only the dish matters", "Gateway, PoP, and the rest of the Internet path", "Only ARP on the LAN", "Only SMB port 445"], "answer": 1, "explain": "End-to-end delay includes space segment plus terrestrial egress and Internet routing."}]}, {"id": "m6", "title": "Inter-Satellite Lasers (ISLs)", "short": "Laser ISLs", "desc": "When bent-pipe isn’t enough: optical mesh in space for oceans and remote regions.", "content": "\n      <div class=\"content-section\">\n        <h3>Bent-pipe limits</h3>\n        <p>In a simple <strong>bent-pipe</strong> design, the satellite that hears your dish must also reach a ground gateway. Over mid-ocean or polar stretches, there may be no nearby gateway. Enter <strong>inter-satellite links (ISLs)</strong> — lasers between satellites.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Mesh in space</h3>\n        <p>With optical ISLs, satellites can forward traffic <em>space-to-space</em> until a bird that can see a gateway lands the session onto fiber. That extends coverage and can shorten some paths compared to forcing a detour to a distant ground station too early.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 190\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"190\">\n            <ellipse cx=\"260\" cy=\"170\" rx=\"200\" ry=\"16\" fill=\"#1e2a3a\" stroke=\"#2d3a4f\"/>\n            <text x=\"120\" y=\"174\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">Ocean</text>\n            <text x=\"380\" y=\"174\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">Land + gateway</text>\n            <circle cx=\"100\" cy=\"70\" r=\"14\" fill=\"#243044\" stroke=\"#3b9eff\"/><text x=\"100\" y=\"74\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">S1</text>\n            <circle cx=\"250\" cy=\"50\" r=\"14\" fill=\"#243044\" stroke=\"#3dd68c\"/><text x=\"250\" y=\"54\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">S2</text>\n            <circle cx=\"400\" cy=\"70\" r=\"14\" fill=\"#243044\" stroke=\"#a78bfa\"/><text x=\"400\" y=\"74\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">S3</text>\n            <line x1=\"114\" y1=\"70\" x2=\"236\" y2=\"55\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <line x1=\"264\" y1=\"55\" x2=\"386\" y2=\"70\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"260\" y=\"30\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"11\" font-family=\"system-ui\">Optical ISLs</text>\n            <rect x=\"360\" y=\"120\" width=\"90\" height=\"32\" rx=\"6\" fill=\"#1e2a3a\" stroke=\"#f5a623\"/>\n            <text x=\"405\" y=\"140\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"10\" font-family=\"system-ui\">Gateway</text>\n            <line x1=\"400\" y1=\"84\" x2=\"400\" y2=\"120\" stroke=\"#f5a623\" stroke-width=\"1.5\"/>\n            <rect x=\"40\" y=\"120\" width=\"70\" height=\"32\" rx=\"6\" fill=\"#1e2a3a\" stroke=\"#3b9eff\"/>\n            <text x=\"75\" y=\"140\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"10\" font-family=\"system-ui\">Ship dish</text>\n            <line x1=\"75\" y1=\"120\" x2=\"95\" y2=\"84\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n          </svg>\n          <div class=\"diagram-caption\">Lasers let traffic hop across sats before landing at a gateway</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Why you should care</h3>\n        <ul>\n          <li>Enables service far from ground stations (maritime, remote)</li>\n          <li>Is part of Starlink’s long-term mesh architecture</li>\n          <li>Doesn’t change your home LAN setup — it’s provider-side path magic</li>\n        </ul>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>ISLs are laser links between satellites. They turn the constellation into a space mesh so traffic can reach a gateway even when your sat isn’t over one.</div>\n  ", "questions": [{"q": "What is an ISL in the Starlink context?", "options": ["Internet Service Lemon", "Inter-satellite link — often optical laser between satellites", "Indoor Switch Loopback", "IPv6 Subnet Lease only"], "answer": 1, "explain": "ISLs interconnect satellites; Starlink uses optical lasers for many of these links."}, {"q": "When are ISLs especially helpful?", "options": ["When you only need LAN printing", "Over oceans/remote areas far from gateways", "When disabling all routing", "Only for SMTP port 25"], "answer": 1, "explain": "Lasers extend reach so traffic can travel in space until a gateway is available."}, {"q": "Bent-pipe without ISLs requires:", "options": ["The serving satellite to reach a ground gateway directly", "That your PC run BGP", "GEO altitude only", "Port forwarding on CGNAT"], "answer": 0, "explain": "Classic bent-pipe: up to sat, down to a gateway that sat can see."}, {"q": "Do ISLs require you to reconfigure home DHCP?", "options": ["Yes — every laser hop needs a new LAN subnet", "No — ISLs are provider-side pathing; your LAN stays the same", "Only on Tuesdays", "Yes — you must disable IPv4 forever"], "answer": 1, "explain": "Home LAN addressing doesn’t change when the provider uses space lasers."}]}, {"id": "m7", "title": "Home LAN vs Starlink WAN", "short": "LAN vs WAN", "desc": "Same home NAT mental model as fundamentals — Starlink is simply the ISP on the WAN side.", "content": "\n      <div class=\"content-section\">\n        <h3>Two sides of your router</h3>\n        <p>Your home setup still looks like Fundamentals:</p>\n        <ul>\n          <li><strong>LAN</strong> — private addresses (often <span class=\"tag\">192.168.x.x</span>), Wi‑Fi, switches, printers</li>\n          <li><strong>WAN</strong> — the uplink toward the ISP; with Starlink, that path goes dish → constellation → gateway/PoP</li>\n        </ul>\n        <p>The Starlink router (or your own router in bypass/passthrough-style setups) still does <strong>NAT</strong> for IPv4 on the home side. Devices share connectivity toward the ISP.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 180\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"180\">\n            <rect x=\"20\" y=\"40\" width=\"160\" height=\"100\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <text x=\"100\" y=\"70\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Your LAN</text>\n            <text x=\"100\" y=\"95\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">private IPs</text>\n            <text x=\"100\" y=\"115\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">Wi‑Fi / Ethernet</text>\n            <rect x=\"220\" y=\"55\" width=\"100\" height=\"70\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"270\" y=\"85\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Router</text>\n            <text x=\"270\" y=\"105\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">NAT / FW</text>\n            <rect x=\"360\" y=\"40\" width=\"140\" height=\"100\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"430\" y=\"70\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Starlink WAN</text>\n            <text x=\"430\" y=\"95\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">dish → sat →</text>\n            <text x=\"430\" y=\"115\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">PoP → Internet</text>\n            <line x1=\"180\" y1=\"90\" x2=\"220\" y2=\"90\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <line x1=\"320\" y1=\"90\" x2=\"360\" y2=\"90\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n          </svg>\n          <div class=\"diagram-caption\">Same home mental model — Starlink is the ISP WAN</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>What changes vs cable/fiber</h3>\n        <ul>\n          <li>Physical WAN medium is RF to LEO, not DOCSIS/fiber ONT</li>\n          <li>Obstructions &amp; weather can affect the WAN link</li>\n          <li>IPv4 is often CGNAT (next module); IPv6 is first-class</li>\n        </ul>\n        <div class=\"callout\">Bypass mode / your own router: advanced users put their router behind the dish so they control LAN DHCP/VLANs — WAN is still Starlink.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Don’t reinvent networking: LAN is yours; Starlink is the WAN/ISP. The dish replaces the cable modem role, not the idea of routers and NAT.</div>\n  ", "questions": [{"q": "On a typical home Starlink setup, where do private 192.168 addresses usually live?", "options": ["Only on the public Internet backbone", "On the LAN side of your router", "Inside every LEO satellite CPU", "Only in GEO bent-pipe mode"], "answer": 1, "explain": "Private LAN addressing is still on your home network side."}, {"q": "Starlink’s role relative to your house is closest to:", "options": ["A local printer driver", "The ISP providing the WAN uplink", "A replacement for Ethernet switches only", "An offline CDN inside the TV"], "answer": 1, "explain": "Starlink is the Internet provider; the dish is the access modem/radio."}, {"q": "Which statement is true?", "options": ["Starlink removes the need for any router forever", "You still have a LAN vs WAN boundary; Starlink sits on the WAN side", "All LAN traffic must use Ku-band", "NAT cannot exist with satellites"], "answer": 1, "explain": "Classic LAN/WAN split remains; Starlink is WAN/ISP."}, {"q": "Obstructions mainly affect:", "options": ["Only your LAN switch MAC table", "The WAN radio link from dish to satellites", "Only HTTPS certificate validity", "Only DNSSEC on the Pi"], "answer": 1, "explain": "Sky blockage hurts the dish↔satellite WAN path."}]}, {"id": "m8", "title": "CGNAT & IPv4 on Starlink", "short": "CGNAT & IPv4", "desc": "Default residential CGNAT in 100.64.0.0/10, inbound limits, blocked ports, and optional public IPv4.", "content": "\n      <div class=\"content-section\">\n        <h3>Default residential IPv4: CGNAT</h3>\n        <p>Most residential Starlink IPv4 service puts you behind <strong>CGNAT</strong> (Carrier-Grade NAT). Your router’s WAN address is often in the shared range <span class=\"tag\">100.64.0.0/10</span> (RFC 6598) — not a unique public IPv4 on the Internet.</p>\n        <p>Practical effects:</p>\n        <ul>\n          <li><strong>Inbound connections blocked</strong> from the public Internet to your home</li>\n          <li><strong>Port forwarding on your router fails</strong> for true public reachability (you only control home NAT, not CGNAT)</li>\n          <li>Outbound browsing, apps, and most client VPNs still work</li>\n        </ul>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 540 170\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"170\">\n            <rect x=\"15\" y=\"55\" width=\"80\" height=\"50\" rx=\"6\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"55\" y=\"85\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">LAN</text>\n            <rect x=\"120\" y=\"50\" width=\"100\" height=\"60\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/><text x=\"170\" y=\"75\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"11\" font-weight=\"700\" font-family=\"system-ui\">Home NAT</text><text x=\"170\" y=\"95\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">router</text>\n            <rect x=\"250\" y=\"40\" width=\"120\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#f5a623\" stroke-width=\"2\"/><text x=\"310\" y=\"70\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">CGNAT</text><text x=\"310\" y=\"90\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">100.64.0.0/10</text><text x=\"310\" y=\"105\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">no inbound</text>\n            <rect x=\"400\" y=\"55\" width=\"120\" height=\"50\" rx=\"6\" fill=\"#1e2a3a\" stroke=\"#a78bfa\"/><text x=\"460\" y=\"85\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">Internet</text>\n            <line x1=\"95\" y1=\"80\" x2=\"120\" y2=\"80\" stroke=\"#8b9cb3\"/><line x1=\"220\" y1=\"80\" x2=\"250\" y2=\"80\" stroke=\"#f5a623\"/><line x1=\"370\" y1=\"80\" x2=\"400\" y2=\"80\" stroke=\"#a78bfa\"/>\n          </svg>\n          <div class=\"diagram-caption\">Double NAT reality: home NAT + Starlink CGNAT</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Blocked outbound ports (know these)</h3>\n        <p>Starlink blocks some outbound ports on residential service, including:</p>\n        <ul>\n          <li><span class=\"tag\">TCP/25</span> — SMTP (spam prevention; use authenticated submission on 587/465 via your email provider)</li>\n          <li><span class=\"tag\">TCP/445</span> — SMB (reduces worm/ransomware exposure)</li>\n        </ul>\n      </div>\n      <div class=\"content-section\">\n        <h3>Optional public IPv4</h3>\n        <p>Some plans (e.g. <strong>Priority</strong>, <strong>Mobile Priority</strong>, <strong>Maritime</strong>) can offer <strong>public IPv4</strong>. Important nuances:</p>\n        <ul>\n          <li>It is <strong>not a guaranteed static</strong> address — treat it as public but potentially changing</li>\n          <li>Enables use cases that need inbound or a real public v4 presence</li>\n          <li>Still not a substitute for good firewall hygiene</li>\n        </ul>\n        <div class=\"callout warning\">Hosting a game server or camera on default residential CGNAT? Port-forward alone won’t publish you to the Internet — use a relay/VPN, IPv6, or a plan with public IPv4.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Default Starlink IPv4 is CGNAT in 100.64.0.0/10: inbound blocked, port-forward ineffective. TCP/25 and TCP/445 outbound are blocked. Public IPv4 exists on some higher-tier plans but isn’t static.</div>\n  ", "questions": [{"q": "Default residential Starlink IPv4 is typically:", "options": ["A unique static /32 from ARIN forever", "CGNAT using shared space like 100.64.0.0/10", "Only IPv6 with no IPv4 at all", "Public IPv4 on every roaming kit"], "answer": 1, "explain": "Residential service commonly uses CGNAT in the 100.64.0.0/10 shared range."}, {"q": "Why does port forwarding on your home router often fail to accept inbound Internet clients?", "options": ["Because Ethernet cannot carry TCP", "Because CGNAT still blocks unsolicited inbound before it reaches you", "Because DNS forbids ports", "Because Ku-band cannot carry IP"], "answer": 1, "explain": "Home port-forward only opens your NAT; CGNAT is another layer you don’t control."}, {"q": "Which outbound ports are commonly blocked on Starlink residential?", "options": ["TCP/443 and TCP/80 only", "TCP/25 (SMTP) and TCP/445 (SMB)", "Only UDP/53", "Only ICMP forever"], "answer": 1, "explain": "SMTP 25 and SMB 445 are commonly blocked outbound."}, {"q": "Public IPv4 on Priority / Mobile Priority / Maritime is:", "options": ["Always a permanent static IP guaranteed forever", "Available on some plans but not a static guarantee", "Impossible on Starlink", "Only delivered over Bluetooth"], "answer": 1, "explain": "Public IPv4 can be offered on those plans but is not a promised static assignment."}, {"q": "Your router WAN IP shows 100.64.12.34. What does that suggest?", "options": ["You have a globally unique public IPv4", "You are likely on CGNAT shared address space", "Your LAN switched to GEO mode", "DNS is disabled"], "answer": 1, "explain": "100.64.0.0/10 is the shared CGNAT space — a classic clue."}]}, {"id": "m9", "title": "IPv6 on Starlink", "short": "IPv6", "desc": "Starlink is IPv6-native: public addressing and /56-style prefix delegation for your LAN.", "content": "\n      <div class=\"content-section\">\n        <h3>IPv6-first mindset</h3>\n        <p>Starlink is <strong>IPv6-native</strong>. While IPv4 is often stuck behind CGNAT, IPv6 gives your network <strong>public reachability semantics</strong> without sharing a single v4 address through carrier NAT.</p>\n        <p>Typically you receive a generous LAN delegation — on the order of a <strong>/56</strong> via <strong>DHCPv6-PD</strong> (Prefix Delegation) — so your router can number many /64 subnets.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Why IPv6 feels “cleaner” here</h3>\n        <ul>\n          <li>No CGNAT middlebox rewriting every flow on v6</li>\n          <li>End-to-end addressing possible (still use a firewall!)</li>\n          <li>Great for inbound use cases that fail on CGNAT v4 — <em>if</em> you allow them in the firewall and your apps support v6</li>\n        </ul>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 500 160\" xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"160\">\n            <rect x=\"30\" y=\"40\" width=\"140\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <text x=\"100\" y=\"75\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Your LAN</text>\n            <text x=\"100\" y=\"95\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">/56 → /64s</text>\n            <line x1=\"170\" y1=\"80\" x2=\"230\" y2=\"80\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <rect x=\"230\" y=\"40\" width=\"110\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"285\" y=\"75\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Router</text>\n            <text x=\"285\" y=\"95\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">DHCPv6-PD</text>\n            <line x1=\"340\" y1=\"80\" x2=\"400\" y2=\"80\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <rect x=\"400\" y=\"40\" width=\"80\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"440\" y=\"85\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"12\" font-family=\"system-ui\">v6</text>\n          </svg>\n          <div class=\"diagram-caption\">Prefix delegation numbers your LAN with public IPv6 space</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Operational tips</h3>\n        <ul>\n          <li>Ensure your router supports DHCPv6-PD and firewalls IPv6 properly</li>\n          <li>“Disable IPv6” troubleshooting tips from old forums can make Starlink worse</li>\n          <li>Test with dual-stack aware tools; some apps still prefer broken v4 paths</li>\n        </ul>\n        <div class=\"callout\">IPv6 public ≠ “no security.” Use allow/deny firewall rules on inbound v6 just as you would think about exposing ports on public v4.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Starlink embraces IPv6: expect native v6 and roughly /56 PD for the LAN. For reachability that CGNAT breaks on v4, IPv6 is often the cleaner path — with a real firewall.</div>\n  ", "questions": [{"q": "Starlink’s stance on IPv6 is best described as:", "options": ["IPv6 is disabled network-wide", "IPv6-native with prefix delegation to customers", "IPv6 only works on GEO sats", "IPv6 requires TCP/445"], "answer": 1, "explain": "Starlink is IPv6-native and delegates prefixes (commonly /56-style) to the LAN."}, {"q": "What does DHCPv6-PD provide?", "options": ["A Wi‑Fi password", "A delegated IPv6 prefix for your router to number the LAN", "A Ka-band license", "An SMTP relay on port 25"], "answer": 1, "explain": "Prefix Delegation hands your CPE a block (e.g. /56) to subnet into /64s."}, {"q": "Why might IPv6 be cleaner than IPv4 on Starlink for reachability?", "options": ["IPv6 packets are always smaller than Ethernet", "No CGNAT rewriting — public addressing end-to-end (with firewall)", "IPv6 cannot be firewalled", "IPv6 removes the need for DNS"], "answer": 1, "explain": "Without CGNAT, v6 avoids the inbound/port-forward pain of shared v4."}, {"q": "A /56 delegation is large enough to:", "options": ["Number only a single device ever", "Carve many /64 subnets for a home/lab LAN", "Replace all fiber PoPs", "Hold only 2 IPv6 addresses total"], "answer": 1, "explain": "A /56 contains many /64s — suitable for multiple LAN segments."}, {"q": "Should you leave IPv6 wide open inbound because addresses are public?", "options": ["Yes — public means trustworthy", "No — still apply firewall allow/deny policy", "Yes — Starlink blocks all v6 firewalls", "Only if you disable the dish"], "answer": 1, "explain": "Public IPv6 still needs inbound filtering — exposure risk remains."}]}, {"id": "m10", "title": "Capstone Scenario Quiz", "short": "Capstone", "desc": "Troubleshoot Starlink scenarios: obstruction, CGNAT inbound, LEO expectations, and which hop failed.", "content": "\n      <div class=\"content-section\">\n        <h3>Integrate the whole path</h3>\n        <p>This capstone has no new lecture — only scenarios. Trace failures along:</p>\n        <p><span class=\"tag\">LAN</span> → <span class=\"tag\">Router</span> → <span class=\"tag\">Dish/RF</span> → <span class=\"tag\">Sat / ISL</span> → <span class=\"tag\">Gateway</span> → <span class=\"tag\">PoP</span> → <span class=\"tag\">Internet</span></p>\n        <div class=\"callout\">Score 70%+ to finish the Starlink Network Study Guide. Use what you learned about LEO, CGNAT, IPv6, and handovers.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Name the hop: sky/RF vs LAN vs CGNAT policy vs Internet path. Starlink adds moving radios and ISP CGNAT — fundamentals still apply.</div>\n  ", "questions": [{"q": "App shows heavy obstruction; Wi‑Fi LAN is fine. Best explanation?", "options": ["CGNAT deleted HTTPS", "Dish lacks clear sky view to the constellation (RF/user link)", "PoP ran out of MAC addresses", "IPv6 /56 is too big"], "answer": 1, "explain": "Obstruction is a classic dish↔satellite visibility failure."}, {"q": "Friend cannot connect to your home game server; you set port-forward. Residential Starlink. Likely cause?", "options": ["Ku-band cannot carry UDP", "CGNAT blocks inbound despite home port-forward", "Handovers disable all TCP forever", "Gateways reject all gaming ASNs"], "answer": 1, "explain": "Default CGNAT prevents unsolicited inbound; home forwarding isn’t enough."}, {"q": "Expecting sub-10 ms like local fiber, but see ~40–60 ms on Starlink. Most fair expectation?", "options": ["Starlink is broken if not identical to metro fiber", "LEO is far lower latency than GEO but still includes RF + path overhead vs urban fiber", "All LEO links are always 500 ms", "Latency only comes from SMB 445"], "answer": 1, "explain": "LEO beats GEO dramatically but isn’t always as low as nearby fiber."}, {"q": "Traceroute dies after leaving your router; dish offline in app. Which hop failed first?", "options": ["Public Internet peering only", "The Starlink user terminal / WAN radio path", "Only DNS root-anycast in Singapore", "Your printer’s LPD queue"], "answer": 1, "explain": "If the dish is offline, the WAN access link is down before gateway/PoP matter."}, {"q": "You need inbound reachability without fighting CGNAT. A solid approach on Starlink is:", "options": ["Ignore firewalls and open TCP/445 to the world on v4 CGNAT", "Use IPv6 (firewalled) and/or a plan with public IPv4 / a relay VPN", "Disable the phased array", "Force all traffic onto SMTP port 25"], "answer": 1, "explain": "IPv6 or public-v4 plans/relays address CGNAT inbound limits responsibly."}, {"q": "During a satellite handover your Zoom call continues. What does that illustrate?", "options": ["Handovers always drop every session", "Terminal/constellation handovers can preserve sessions across sats", "Zoom runs only on GEO", "PoPs must reboot per handover"], "answer": 1, "explain": "Handovers are designed to keep connectivity and sessions going."}]}];
+
+function defaultState() {
+  return { unlocked: 0, completed: {}, current: null };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) { return defaultState(); }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+let state = loadState();
+
+function $(sel) { return document.querySelector(sel); }
+function completedCount() {
+  return MODULES.filter(m => state.completed[m.id] && state.completed[m.id].passed).length;
+}
+function updateProgressUI() {
+  const done = completedCount();
+  const total = MODULES.length;
+  const pct = Math.round((done / total) * 100);
+  $('#progCurrent').textContent = done;
+  $('#progTotal').textContent = total;
+  $('#progPct').textContent = pct;
+  $('#progBar').style.width = pct + '%';
+}
+function closeMobile() {
+  $('#sidebar').classList.remove('open');
+  $('#sidebarOverlay').classList.remove('open');
+}
+function renderNav() {
+  const nav = $('#moduleNav');
+  nav.innerHTML = '';
+  const welcomeLi = document.createElement('li');
+  welcomeLi.className = 'module-nav-item' + (state.current === null ? ' active' : '');
+  welcomeLi.innerHTML = '<span class="nav-icon">⌂</span><span>Welcome</span>';
+  welcomeLi.addEventListener('click', () => { state.current = null; saveState(state); render(); closeMobile(); });
+  nav.appendChild(welcomeLi);
+  MODULES.forEach((mod, i) => {
+    const isLocked = i > state.unlocked;
+    const isDone = !!(state.completed[mod.id] && state.completed[mod.id].passed);
+    const isActive = state.current === i;
+    const li = document.createElement('li');
+    li.className = 'module-nav-item' + (isLocked ? ' locked' : '') + (isDone ? ' completed' : '') + (isActive ? ' active' : '');
+    let icon = String(i + 1);
+    if (isDone) icon = '✓';
+    if (isLocked) icon = '🔒';
+    li.innerHTML = '<span class="nav-icon">' + icon + '</span><span>' + mod.short + '</span>';
+    if (!isLocked) {
+      li.addEventListener('click', () => { state.current = i; saveState(state); render(); closeMobile(); });
+    }
+    nav.appendChild(li);
+  });
+}
+function renderWelcome() {
+  const done = completedCount();
+  let cta = '';
+  if (done === MODULES.length) {
+    cta = '<button class="btn btn-success" id="startBtn">Review modules</button>';
+  } else {
+    cta = '<button class="btn btn-primary" id="startBtn">' + (done === 0 && state.unlocked === 0 ? 'Start Module 1' : 'Continue learning') + '</button>';
+  }
+  $('#mainContent').innerHTML =
+    '<div class="welcome">' +
+    '<h2>Starlink Network Study Guide</h2>' +
+    '<p>An interactive study guide that teaches networking through Starlink — LEO paths, dishes, gateways, CGNAT, and IPv6. Score 70%+ on each quiz to unlock the next. Progress saves in this browser.</p>' +
+    '<p style="margin-bottom:1.5rem;color:var(--text-muted);font-size:0.9rem;">' + done + ' of ' + MODULES.length + ' modules completed · ' + Math.round(done / MODULES.length * 100) + '%</p>' +
+    cta +
+    '<div style="margin-top:2.5rem;text-align:left;max-width:480px;margin-left:auto;margin-right:auto;">' +
+    '<h3 style="font-size:1rem;margin-bottom:0.75rem;color:var(--text-muted);">Curriculum</h3>' +
+    '<ol style="color:var(--text-muted);font-size:0.9rem;padding-left:1.2rem;">' +
+    MODULES.map((m, i) => {
+      const mark = (state.completed[m.id] && state.completed[m.id].passed) ? ' ✓' : (i > state.unlocked ? ' 🔒' : '');
+      return '<li style="margin-bottom:0.35rem;">' + m.title + mark + '</li>';
+    }).join('') +
+    '</ol></div></div>';
+  const btn = $('#startBtn');
+  if (btn) btn.addEventListener('click', () => {
+    state.current = (done === MODULES.length) ? 0 : Math.min(state.unlocked, MODULES.length - 1);
+    saveState(state); render();
+  });
+}
+function renderModule(idx) {
+  const mod = MODULES[idx];
+  const prevCompleted = state.completed[mod.id];
+  $('#mainContent').innerHTML =
+    '<div class="module-header">' +
+    '<span class="module-badge">Module ' + (idx + 1) + ' of ' + MODULES.length + '</span>' +
+    '<h2>' + mod.title + '</h2>' +
+    '<p class="desc">' + mod.desc + '</p></div>' +
+    mod.content +
+    '<div class="quiz-section" id="quizSection">' +
+    '<h3>Check your understanding</h3>' +
+    '<p class="quiz-meta">Answer all questions, then submit. You need ' + Math.ceil(PASS_THRESHOLD * 100) + '% to unlock the next module.</p>' +
+    '<div id="questions"></div>' +
+    '<div class="quiz-actions">' +
+    '<button class="btn btn-primary" id="submitQuiz">Submit quiz</button>' +
+    '<button class="btn btn-secondary hidden" id="retryQuiz">Retry quiz</button>' +
+    '</div><div class="score-panel" id="scorePanel"></div></div>' +
+    '<div class="nav-buttons">' +
+    '<button class="btn btn-secondary" id="prevBtn">' + (idx === 0 ? '← Welcome' : '← Previous') + '</button>' +
+    '<button class="btn btn-primary" id="nextBtn" ' + ((idx >= state.unlocked || idx === MODULES.length - 1) ? 'disabled' : '') + '>' +
+    (idx === MODULES.length - 1 ? 'Finish' : 'Next module →') + '</button></div>';
+
+  const qContainer = $('#questions');
+  mod.questions.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.dataset.qi = qi;
+    div.innerHTML =
+      '<div class="question-text">' + (qi + 1) + '. ' + q.q + '</div><div class="options">' +
+      q.options.map((opt, oi) =>
+        '<label class="option"><input type="radio" name="q' + qi + '" value="' + oi + '"><span>' + opt + '</span></label>'
+      ).join('') +
+      '</div><div class="explanation" id="exp' + qi + '"></div>';
+    qContainer.appendChild(div);
+  });
+  qContainer.querySelectorAll('.option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.classList.contains('disabled')) return;
+      const name = opt.querySelector('input').name;
+      qContainer.querySelectorAll('input[name="' + name + '"]').forEach(inp => {
+        inp.closest('.option').classList.remove('selected');
+      });
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+    });
+  });
+  $('#submitQuiz').addEventListener('click', () => gradeQuiz(idx));
+  $('#retryQuiz').addEventListener('click', () => {
+    saveState(state);
+    renderModule(idx);
+    updateProgressUI();
+    renderNav();
+    window.scrollTo({ top: $('#quizSection').offsetTop - 20, behavior: 'smooth' });
+  });
+  $('#prevBtn').addEventListener('click', () => {
+    state.current = idx === 0 ? null : idx - 1;
+    saveState(state); render();
+  });
+  $('#nextBtn').addEventListener('click', () => {
+    if (idx < MODULES.length - 1 && idx < state.unlocked) {
+      state.current = idx + 1; saveState(state); render();
+    } else if (idx === MODULES.length - 1 && state.completed[mod.id] && state.completed[mod.id].passed) {
+      state.current = null; saveState(state); render();
+    }
+  });
+  if (prevCompleted && prevCompleted.passed) {
+    showScore(idx, prevCompleted.score, prevCompleted.total, true, true);
+  }
+  const nextBtn = $('#nextBtn');
+  if (idx < MODULES.length - 1 && state.unlocked > idx) nextBtn.disabled = false;
+  if (idx === MODULES.length - 1 && state.completed[mod.id] && state.completed[mod.id].passed) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Back to welcome →';
+  }
+}
+function gradeQuiz(idx) {
+  const mod = MODULES[idx];
+  let correct = 0;
+  const total = mod.questions.length;
+  let allAnswered = true;
+  mod.questions.forEach((q, qi) => {
+    if (!document.querySelector('input[name="q' + qi + '"]:checked')) allAnswered = false;
+  });
+  if (!allAnswered) { alert('Please answer all questions before submitting.'); return; }
+  mod.questions.forEach((q, qi) => {
+    const selected = document.querySelector('input[name="q' + qi + '"]:checked');
+    const chosen = parseInt(selected.value, 10);
+    const qEl = document.querySelector('.question[data-qi="' + qi + '"]');
+    const exp = $('#exp' + qi);
+    qEl.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
+    qEl.querySelectorAll('input').forEach(i => { i.disabled = true; });
+    qEl.querySelectorAll('.option').forEach((o, oi) => {
+      if (oi === q.answer) o.classList.add('correct');
+      if (oi === chosen && chosen !== q.answer) o.classList.add('incorrect');
+    });
+    if (chosen === q.answer) {
+      correct++;
+      qEl.classList.add('answered-correct');
+      exp.className = 'explanation show correct-exp';
+      exp.textContent = '✓ Correct. ' + q.explain;
+    } else {
+      qEl.classList.add('answered-wrong');
+      exp.className = 'explanation show wrong-exp';
+      exp.textContent = '✗ Not quite. ' + q.explain;
+    }
+  });
+  const ratio = correct / total;
+  const passed = ratio >= PASS_THRESHOLD;
+  state.completed[mod.id] = { score: correct, total: total, passed: passed };
+  if (passed && idx + 1 < MODULES.length && state.unlocked < idx + 1) {
+    state.unlocked = idx + 1;
+  }
+  saveState(state);
+  showScore(idx, correct, total, passed, false);
+  updateProgressUI();
+  renderNav();
+  const nextBtn = $('#nextBtn');
+  if (passed && idx < MODULES.length - 1) nextBtn.disabled = false;
+  if (passed && idx === MODULES.length - 1) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Back to welcome →';
+  }
+}
+function showScore(idx, score, total, passed, fromCache) {
+  const panel = $('#scorePanel');
+  const pct = Math.round((score / total) * 100);
+  panel.className = 'score-panel show ' + (passed ? 'pass' : 'fail');
+  let msg;
+  if (passed) {
+    msg = idx < MODULES.length - 1 ? 'Next module unlocked. Great work!' : '🎉 You completed the Starlink Network Study Guide!';
+  } else {
+    msg = 'You need at least ' + Math.ceil(PASS_THRESHOLD * 100) + '% to unlock the next module. Review the explanations and retry.';
+  }
+  panel.innerHTML =
+    '<div class="score-num">' + score + '/' + total + '</div>' +
+    '<p style="font-weight:600;margin-bottom:0.5rem;">' + pct + '% — ' + (passed ? 'Passed!' : 'Not yet — keep going') + '</p>' +
+    '<p style="font-size:0.9rem;color:var(--text-muted);">' + msg + '</p>';
+  $('#submitQuiz').classList.add('hidden');
+  $('#retryQuiz').classList.remove('hidden');
+  if (!fromCache) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function render() {
+  updateProgressUI();
+  renderNav();
+  if (state.current === null) renderWelcome();
+  else renderModule(state.current);
+  window.scrollTo({ top: 0 });
+}
+$('#hamburger').addEventListener('click', () => {
+  $('#sidebar').classList.toggle('open');
+  $('#sidebarOverlay').classList.toggle('open');
+});
+$('#sidebarOverlay').addEventListener('click', closeMobile);
+$('#resetBtn').addEventListener('click', () => $('#resetModal').classList.add('open'));
+$('#resetCancel').addEventListener('click', () => $('#resetModal').classList.remove('open'));
+$('#resetConfirm').addEventListener('click', () => {
+  state = defaultState();
+  saveState(state);
+  $('#resetModal').classList.remove('open');
+  render();
+});
+render();
+
+</script>
+</body>
+</html>

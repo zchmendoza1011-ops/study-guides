@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networking Fundamentals — Interactive Study Guide</title>
+<style>
+:root {
+  --bg:#0f1419; --bg-elevated:#1a2332; --bg-card:#1e2a3a; --bg-hover:#243044;
+  --border:#2d3a4f; --text:#e8eef6; --text-muted:#8b9cb3;
+  --accent:#3b9eff; --accent-soft:rgba(59,158,255,.15);
+  --success:#3dd68c; --success-soft:rgba(61,214,140,.15);
+  --warning:#f5a623; --warning-soft:rgba(245,166,35,.15);
+  --danger:#f56565; --danger-soft:rgba(245,101,101,.15);
+  --locked:#4a5568; --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.35);
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"SF Mono","Cascadia Code",Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:var(--bg-elevated);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1rem}
+.sidebar-brand{padding:.5rem .75rem 1rem;border-bottom:1px solid var(--border)}
+.sidebar-brand h1{font-size:1.05rem;font-weight:700;line-height:1.3}
+.sidebar-brand .subtitle{font-size:.75rem;color:var(--text-muted);margin-top:.25rem}
+.progress-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.progress-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem}
+.progress-label strong{color:var(--accent)}
+.progress-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#6bc1ff);border-radius:4px;transition:width .4s ease;width:0%}
+.module-nav{list-style:none;display:flex;flex-direction:column;gap:.35rem;flex:1}
+.module-nav-item{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text-muted);border:1px solid transparent;transition:all .15s;user-select:none}
+.module-nav-item:hover:not(.locked){background:var(--bg-hover);color:var(--text)}
+.module-nav-item.active{background:var(--accent-soft);color:var(--accent);border-color:rgba(59,158,255,.3)}
+.module-nav-item.completed{color:var(--success)}
+.module-nav-item.locked{opacity:.45;cursor:not-allowed}
+.nav-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;background:var(--border);color:var(--text-muted)}
+.module-nav-item.active .nav-icon{background:var(--accent);color:#fff}
+.module-nav-item.completed .nav-icon{background:var(--success);color:#0f1419}
+.module-nav-item.locked .nav-icon{background:var(--locked)}
+.sidebar-actions{padding-top:.75rem;border-top:1px solid var(--border)}
+.btn-reset{width:100%;padding:.55rem;background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.8rem;transition:all .15s}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.main{padding:2rem 2.5rem 4rem;max-width:820px;width:100%;margin:0 auto}
+.mobile-header{display:none;background:var(--bg-elevated);border-bottom:1px solid var(--border);padding:.75rem 1rem;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.mobile-header h1{font-size:.95rem;font-weight:700}
+.hamburger{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:.4rem .7rem;border-radius:6px;cursor:pointer;font-size:1.1rem}
+.welcome{text-align:center;padding:3rem 1rem}
+.welcome h2{font-size:1.85rem;margin-bottom:.75rem;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.welcome p{color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem}
+.module-header{margin-bottom:1.75rem}
+.module-badge{display:inline-block;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);background:var(--accent-soft);padding:.25rem .65rem;border-radius:20px;margin-bottom:.75rem}
+.module-header h2{font-size:1.65rem;font-weight:700;margin-bottom:.4rem}
+.module-header .desc{color:var(--text-muted);font-size:.95rem}
+.content-section{margin-bottom:1.75rem}
+.content-section h3{font-size:1.15rem;margin-bottom:.65rem}
+.content-section p{margin-bottom:.85rem}
+.content-section ul,.content-section ol{margin:.5rem 0 1rem 1.4rem}
+.content-section li{margin-bottom:.4rem}
+.takeaway{background:var(--success-soft);border:1px solid rgba(61,214,140,.35);border-left:4px solid var(--success);border-radius:8px;padding:1rem 1.15rem;margin:1.5rem 0}
+.takeaway strong{color:var(--success);display:block;margin-bottom:.3rem;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em}
+.diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin:1.25rem 0;overflow-x:auto}
+.diagram svg{display:block;margin:0 auto;max-width:100%}
+.diagram-caption{text-align:center;font-size:.8rem;color:var(--text-muted);margin-top:.75rem}
+.code-block{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem;font-family:var(--mono);font-size:.85rem;overflow-x:auto;margin:1rem 0;color:#a8c0d8;white-space:pre;line-height:1.5}
+.callout{background:var(--accent-soft);border:1px solid rgba(59,158,255,.3);border-radius:8px;padding:.9rem 1.1rem;margin:1rem 0;font-size:.92rem}
+.callout.warning{background:var(--warning-soft);border-color:rgba(245,166,35,.35)}
+.quiz-section{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:2rem}
+.quiz-section h3{font-size:1.2rem;margin-bottom:.35rem}
+.quiz-meta{font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem}
+.question{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.15rem;margin-bottom:1rem}
+.question.answered-correct{border-color:rgba(61,214,140,.5)}
+.question.answered-wrong{border-color:rgba(245,101,101,.5)}
+.question-text{font-weight:600;margin-bottom:.85rem;font-size:.95rem}
+.options{display:flex;flex-direction:column;gap:.45rem}
+.option{display:flex;align-items:flex-start;gap:.65rem;padding:.65rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:.9rem}
+.option:hover:not(.disabled){border-color:var(--accent);background:var(--accent-soft)}
+.option.selected{border-color:var(--accent);background:var(--accent-soft)}
+.option.correct{border-color:var(--success);background:var(--success-soft)}
+.option.incorrect{border-color:var(--danger);background:var(--danger-soft)}
+.option.disabled{cursor:default}
+.option input{margin-top:.2rem;accent-color:var(--accent)}
+.explanation{margin-top:.75rem;padding:.75rem;border-radius:6px;font-size:.88rem;display:none}
+.explanation.show{display:block}
+.explanation.correct-exp{background:var(--success-soft);color:var(--success)}
+.explanation.wrong-exp{background:var(--danger-soft);color:#fca5a5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.65rem 1.25rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#2b8eef}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:var(--bg-card);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg-hover)}
+.btn-success{background:var(--success);color:#0f1419}
+.btn-success:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(1.1)}
+.quiz-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+.score-panel{text-align:center;padding:1.5rem;margin-top:1rem;border-radius:var(--radius);display:none}
+.score-panel.show{display:block}
+.score-panel.pass{background:var(--success-soft);border:1px solid rgba(61,214,140,.4)}
+.score-panel.fail{background:var(--warning-soft);border:1px solid rgba(245,166,35,.4)}
+.score-panel .score-num{font-size:2.5rem;font-weight:800;margin-bottom:.25rem}
+.score-panel.pass .score-num{color:var(--success)}
+.score-panel.fail .score-num{color:var(--warning)}
+.nav-buttons{display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90}
+.sidebar-overlay.open{display:block}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;max-width:400px;width:100%;box-shadow:var(--shadow)}
+.modal h3{margin-bottom:.65rem}
+.modal p{color:var(--text-muted);margin-bottom:1.25rem;font-size:.92rem}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end}
+.hidden{display:none!important}
+.tag{display:inline-block;font-size:.75rem;padding:.15rem .5rem;border-radius:4px;background:var(--bg);border:1px solid var(--border);font-family:var(--mono);color:var(--accent)}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;z-index:100;width:280px;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-header{display:flex}
+  .main{padding:1.25rem 1rem 3rem}
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-header">
+  <h1>Networking Fundamentals</h1>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h1>Networking Fundamentals</h1>
+      <div class="subtitle">Interactive Study Guide</div>
+    </div>
+    <div class="progress-panel">
+      <div class="progress-label">
+        <span>Module <strong id="progCurrent">0</strong> of <strong id="progTotal">10</strong></span>
+        <span><strong id="progPct">0</strong>%</span>
+      </div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progBar"></div></div>
+    </div>
+    <ul class="module-nav" id="moduleNav"></ul>
+    <div class="sidebar-actions">
+      <button class="btn-reset" id="resetBtn">Reset Progress</button>
+    </div>
+  </aside>
+  <main class="main" id="mainContent"></main>
+</div>
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>Reset all progress?</h3>
+    <p>This will lock all modules again and clear your quiz scores. You can’t undo this.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="resetCancel">Cancel</button>
+      <button class="btn btn-danger" id="resetConfirm">Reset</button>
+    </div>
+  </div>
+</div>
+<script>
+
+const STORAGE_KEY = 'netStudyGuide_v1';
+const PASS_THRESHOLD = 0.7;
+const MODULES = [{"id": "m1", "title": "What is a Network?", "short": "Networks, LAN/WAN", "desc": "Learn what a network is, how LAN and WAN differ, and the roles of clients and servers.", "content": "\n      <div class=\"content-section\">\n        <h3>The big idea</h3>\n        <p>A <strong>network</strong> is simply a group of devices that can talk to each other. Your phone, laptop, printer, and smart TV at home form a network. The entire internet is also a network — just a much bigger one.</p>\n        <p>Devices on a network share data using agreed-upon rules called <strong>protocols</strong>. You don’t need to memorize them yet; just know that shared rules are what make communication possible.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>LAN vs WAN</h3>\n        <p><strong>LAN (Local Area Network)</strong> — covers a small area: a home, office, or classroom. Devices are usually connected through a switch or Wi‑Fi router. Fast and under local control.</p>\n        <p><strong>WAN (Wide Area Network)</strong> — spans cities, countries, or the world. The internet is the largest WAN. WANs connect many LANs together.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 200\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"200\">\n            <rect x=\"20\" y=\"30\" width=\"200\" height=\"140\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <text x=\"120\" y=\"55\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Your LAN (Home)</text>\n            <circle cx=\"70\" cy=\"100\" r=\"18\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"70\" y=\"104\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">PC</text>\n            <circle cx=\"120\" cy=\"100\" r=\"18\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"120\" y=\"104\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">Phone</text>\n            <circle cx=\"170\" cy=\"100\" r=\"18\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"170\" y=\"104\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"9\" font-family=\"system-ui\">Router</text>\n            <text x=\"120\" y=\"150\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">Same building</text>\n            <line x1=\"220\" y1=\"100\" x2=\"300\" y2=\"100\" stroke=\"#3b9eff\" stroke-width=\"2\" stroke-dasharray=\"6 4\"/>\n            <text x=\"260\" y=\"90\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"11\" font-family=\"system-ui\">Internet</text>\n            <rect x=\"300\" y=\"30\" width=\"200\" height=\"140\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"400\" y=\"55\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Another LAN</text>\n            <circle cx=\"350\" cy=\"100\" r=\"18\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"350\" y=\"104\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">Server</text>\n            <circle cx=\"420\" cy=\"100\" r=\"18\" fill=\"#243044\" stroke=\"#8b9cb3\"/><text x=\"420\" y=\"104\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">PC</text>\n            <text x=\"400\" y=\"150\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">Across the WAN</text>\n          </svg>\n          <div class=\"diagram-caption\">Two LANs connected through a WAN (the internet)</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Clients and servers</h3>\n        <p>A <strong>client</strong> asks for something (your browser requesting a webpage). A <strong>server</strong> provides it (the web server sending the page back).</p>\n        <p>The same device can be both — your laptop can browse the web (client) and also share files with others (server). Roles describe behavior, not hardware.</p>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>A network lets devices exchange data. LANs are local and fast; WANs connect distant networks. Clients request; servers respond.</div>\n  ", "questions": [{"q": "What is a LAN?", "options": ["A network that spans continents", "A network covering a small area like a home or office", "A type of cable used for internet", "A software firewall"], "answer": 1, "explain": "LAN = Local Area Network — typically one building or campus. WANs cover much larger distances."}, {"q": "Which statement best describes a client?", "options": ["A device that only stores data permanently", "A device that requests services or resources", "Always a powerful dedicated machine", "Only smartphones"], "answer": 1, "explain": "Clients request resources (e.g. a browser asking for a webpage). Servers provide them."}, {"q": "The internet is best described as:", "options": ["A single giant LAN", "A WAN that connects many networks worldwide", "Only fiber optic cables", "A type of Wi‑Fi standard"], "answer": 1, "explain": "The internet is a global WAN linking countless LANs and other networks."}, {"q": "Can one computer act as both client and server?", "options": ["No — a device can only have one role", "Yes — roles describe behavior, not fixed hardware", "Only if it has two network cards", "Only on a WAN"], "answer": 1, "explain": "Roles are about what the device is doing. Your PC can browse (client) and share files (server) at the same time."}]}, {"id": "m2", "title": "IP Addresses", "short": "IPv4, private/public", "desc": "Understand IPv4 addresses, private vs public ranges, and what a gateway does.", "content": "\n      <div class=\"content-section\">\n        <h3>What is an IP address?</h3>\n        <p>An <strong>IP address</strong> is a numeric label that identifies a device on a network — like a street address for mail. Without it, other devices wouldn’t know where to send data.</p>\n        <p><strong>IPv4</strong> addresses look like <span class=\"tag\">192.168.1.10</span> — four numbers (0–255) separated by dots. There are about 4.3 billion possible IPv4 addresses.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Private vs public</h3>\n        <p><strong>Public IPs</strong> are unique on the whole internet. Your ISP assigns one to your home router.</p>\n        <p><strong>Private IPs</strong> are used inside your LAN and are not routed on the public internet. Common private ranges:</p>\n        <ul>\n          <li><span class=\"tag\">10.0.0.0</span> – <span class=\"tag\">10.255.255.255</span></li>\n          <li><span class=\"tag\">172.16.0.0</span> – <span class=\"tag\">172.31.255.255</span></li>\n          <li><span class=\"tag\">192.168.0.0</span> – <span class=\"tag\">192.168.255.255</span></li>\n        </ul>\n        <div class=\"callout\">Your laptop might be <span class=\"tag\">192.168.1.42</span> (private). Your whole house shares one public IP facing the internet.</div>\n      </div>\n      <div class=\"content-section\">\n        <h3>What is a gateway?</h3>\n        <p>A <strong>default gateway</strong> is the device (usually your router) that traffic leaves through when the destination isn’t on your local network. Think of it as the “door” from your LAN to everywhere else.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 500 160\" xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"160\">\n            <rect x=\"10\" y=\"40\" width=\"130\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n            <text x=\"75\" y=\"75\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Your PC</text>\n            <text x=\"75\" y=\"95\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">192.168.1.10</text>\n            <line x1=\"140\" y1=\"80\" x2=\"190\" y2=\"80\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <polygon points=\"185,75 195,80 185,85\" fill=\"#3b9eff\"/>\n            <rect x=\"195\" y=\"40\" width=\"130\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"260\" y=\"70\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Gateway</text>\n            <text x=\"260\" y=\"90\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">192.168.1.1</text>\n            <text x=\"260\" y=\"108\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">(Router)</text>\n            <line x1=\"325\" y1=\"80\" x2=\"375\" y2=\"80\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <polygon points=\"370,75 380,80 370,85\" fill=\"#a78bfa\"/>\n            <rect x=\"380\" y=\"40\" width=\"110\" height=\"80\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"1.5\"/>\n            <text x=\"435\" y=\"80\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text>\n          </svg>\n          <div class=\"diagram-caption\">Traffic for the internet goes through the default gateway</div>\n        </div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>IPs identify devices. Private IPs stay on your LAN; public IPs face the internet. The gateway is the exit door for off-network traffic.</div>\n  ", "questions": [{"q": "Which is a valid IPv4 address format?", "options": ["192.168.1.10", "192.168.1", "GG:HH:II:JJ", "192-168-1-10"], "answer": 0, "explain": "IPv4 uses four decimal numbers (0–255) separated by dots."}, {"q": "Is 192.168.0.5 typically a public or private address?", "options": ["Public — unique on the whole internet", "Private — used inside local networks", "Neither — it is invalid", "Only used for printers"], "answer": 1, "explain": "192.168.x.x is in a reserved private range and is not routed on the public internet."}, {"q": "What does a default gateway do?", "options": ["Assigns email addresses", "Routes traffic leaving the local network", "Encrypts all hard drives", "Blocks all Wi‑Fi signals"], "answer": 1, "explain": "When a destination isn’t on your LAN, packets go to the default gateway (usually your router)."}, {"q": "Why do home devices usually use private IPs?", "options": ["Private IPs are faster", "There aren’t enough public IPs for every device; private ranges let many devices share one public IP", "Private IPs only work with fiber", "ISPs ban public IPs indoors"], "answer": 1, "explain": "IPv4 scarcity led to private addressing + NAT so many devices can share one public IP."}]}, {"id": "m3", "title": "Packets, Ports & Why Ports Matter", "short": "Packets & ports", "desc": "See how data is split into packets and how ports direct traffic to the right application.", "content": "\n      <div class=\"content-section\">\n        <h3>Packets: bite-sized data</h3>\n        <p>Networks don’t send entire files in one gulp. Data is broken into small chunks called <strong>packets</strong>. Each packet carries:</p>\n        <ul>\n          <li>A piece of the payload (the actual data)</li>\n          <li>Source and destination addresses</li>\n          <li>Sequencing info so the receiver can reassemble the message</li>\n        </ul>\n        <p>If one packet is lost, only that piece needs to be resent — not the whole file.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Ports: apartment numbers for apps</h3>\n        <p>An IP address gets traffic to the right <em>device</em>. A <strong>port</strong> gets it to the right <em>application</em> on that device.</p>\n        <p>Think of the IP as a building address and the port as an apartment number. Ports are numbers from 0–65535.</p>\n        <div class=\"callout\">Common well-known ports:<br>\n          <span class=\"tag\">80</span> HTTP &nbsp; <span class=\"tag\">443</span> HTTPS &nbsp; <span class=\"tag\">22</span> SSH &nbsp; <span class=\"tag\">53</span> DNS &nbsp; <span class=\"tag\">25</span> SMTP (email)\n        </div>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 480 180\" xmlns=\"http://www.w3.org/2000/svg\" width=\"480\" height=\"180\">\n            <rect x=\"40\" y=\"20\" width=\"400\" height=\"140\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#2d3a4f\" stroke-width=\"2\"/>\n            <text x=\"240\" y=\"48\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Computer @ 192.168.1.10</text>\n            <rect x=\"70\" y=\"70\" width=\"100\" height=\"60\" rx=\"6\" fill=\"#243044\" stroke=\"#3b9eff\"/>\n            <text x=\"120\" y=\"95\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"11\" font-family=\"system-ui\">Browser</text>\n            <text x=\"120\" y=\"112\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">port 443</text>\n            <rect x=\"190\" y=\"70\" width=\"100\" height=\"60\" rx=\"6\" fill=\"#243044\" stroke=\"#3dd68c\"/>\n            <text x=\"240\" y=\"95\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"11\" font-family=\"system-ui\">SSH</text>\n            <text x=\"240\" y=\"112\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">port 22</text>\n            <rect x=\"310\" y=\"70\" width=\"100\" height=\"60\" rx=\"6\" fill=\"#243044\" stroke=\"#a78bfa\"/>\n            <text x=\"360\" y=\"95\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"11\" font-family=\"system-ui\">Game</text>\n            <text x=\"360\" y=\"112\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">port 27015</text>\n          </svg>\n          <div class=\"diagram-caption\">Same IP, different ports → different apps</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Why ports matter</h3>\n        <p>Firewalls filter by port. Servers “listen” on specific ports. Misconfigured ports cause “connection refused” errors. Understanding ports helps you troubleshoot and secure networks.</p>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Packets carry fragments of data across the network. Ports direct each packet to the correct application on a device.</div>\n  ", "questions": [{"q": "Why do networks use packets instead of sending whole files at once?", "options": ["Packets look nicer in Wireshark", "Lost or delayed pieces can be handled without resending everything", "Files cannot be copied otherwise", "Packets remove the need for IP addresses"], "answer": 1, "explain": "Packetizing improves efficiency and recovery — only missing pieces need retransmission."}, {"q": "What does a port number identify?", "options": ["The physical cable type", "Which application or service should receive the traffic", "The country of the sender", "The Wi‑Fi channel"], "answer": 1, "explain": "IP = device; port = application/service on that device."}, {"q": "Which port is commonly used for HTTPS?", "options": ["22", "80", "443", "3389"], "answer": 2, "explain": "HTTPS uses port 443. HTTP uses 80; SSH uses 22."}, {"q": "A web server and an SSH server run on the same machine. How can both receive traffic?", "options": ["They must use different IP addresses", "They listen on different ports (e.g. 443 and 22)", "Only one can run at a time", "They share the same port with a password"], "answer": 1, "explain": "Multiple services coexist on one IP by binding to different ports."}]}, {"id": "m4", "title": "TCP vs UDP", "short": "TCP vs UDP", "desc": "Compare reliable TCP with fast UDP and know when each is the right choice.", "content": "\n      <div class=\"content-section\">\n        <h3>Two ways to deliver packets</h3>\n        <p>Once you have IPs and ports, you still need a transport method. The two main ones are <strong>TCP</strong> and <strong>UDP</strong>.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>TCP — reliable delivery</h3>\n        <p><strong>TCP (Transmission Control Protocol)</strong> is like sending a package with tracking and signature confirmation:</p>\n        <ul>\n          <li>Connection setup (handshake) before data flows</li>\n          <li>Guarantees delivery and correct order</li>\n          <li>Retransmits lost packets</li>\n          <li>Slightly more overhead → a bit slower</li>\n        </ul>\n        <p>Used for: web browsing (HTTP/HTTPS), email, file transfer, SSH — anything where missing data is unacceptable.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>UDP — speed over certainty</h3>\n        <p><strong>UDP (User Datagram Protocol)</strong> is like shouting across a room — fast, no formal confirmation:</p>\n        <ul>\n          <li>No connection setup</li>\n          <li>No guaranteed delivery or order</li>\n          <li>Very low overhead → fast</li>\n        </ul>\n        <p>Used for: video/voice calls, live streaming, online games, DNS queries — where a dropped packet is better than a delay.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 500 170\" xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"170\">\n            <rect x=\"20\" y=\"20\" width=\"210\" height=\"130\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"125\" y=\"50\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"14\" font-weight=\"700\" font-family=\"system-ui\">TCP</text>\n            <text x=\"125\" y=\"78\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">✓ Reliable</text>\n            <text x=\"125\" y=\"98\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">✓ Ordered</text>\n            <text x=\"125\" y=\"118\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">More overhead</text>\n            <rect x=\"270\" y=\"20\" width=\"210\" height=\"130\" rx=\"10\" fill=\"#1e2a3a\" stroke=\"#f5a623\" stroke-width=\"2\"/>\n            <text x=\"375\" y=\"50\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"14\" font-weight=\"700\" font-family=\"system-ui\">UDP</text>\n            <text x=\"375\" y=\"78\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">⚡ Fast</text>\n            <text x=\"375\" y=\"98\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">⚡ Low latency</text>\n            <text x=\"375\" y=\"118\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">No guarantees</text>\n          </svg>\n          <div class=\"diagram-caption\">Choose reliability (TCP) or speed (UDP) based on the job</div>\n        </div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>TCP = reliable and ordered (web, email, files). UDP = fast and lightweight (streaming, games, DNS). Match the protocol to the need.</div>\n  ", "questions": [{"q": "Which protocol guarantees delivery and order?", "options": ["UDP", "TCP", "ICMP only", "ARP"], "answer": 1, "explain": "TCP provides reliable, ordered delivery with retransmission of lost packets."}, {"q": "A live video call drops a few frames. Which transport is typically preferred?", "options": ["TCP — resend every lost frame", "UDP — keep going; late frames are useless", "Neither — video cannot use IP", "FTP"], "answer": 1, "explain": "For real-time media, waiting to retransmit causes worse lag. UDP lets the stream continue."}, {"q": "HTTPS web traffic usually runs over:", "options": ["UDP", "TCP", "Neither", "Only Bluetooth"], "answer": 1, "explain": "HTTP and HTTPS use TCP so pages and assets arrive completely and in order."}, {"q": "What is a downside of TCP compared to UDP?", "options": ["TCP cannot use ports", "Extra overhead and latency from reliability features", "TCP only works on Wi‑Fi", "TCP has no IP addresses"], "answer": 1, "explain": "Handshakes, acknowledgments, and retransmissions add overhead — worthwhile for reliability, costly for real-time apps."}]}, {"id": "m5", "title": "DNS — Names Become IPs", "short": "DNS basics", "desc": "Learn how human-friendly names like google.com turn into IP addresses.", "content": "\n      <div class=\"content-section\">\n        <h3>Why DNS exists</h3>\n        <p>People remember names; computers need numbers. <strong>DNS (Domain Name System)</strong> is the phonebook of the internet — it translates <span class=\"tag\">example.com</span> into an IP like <span class=\"tag\">93.184.216.34</span>.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>What happens when you type a URL</h3>\n        <ol>\n          <li>Your device checks its local cache: “Do I already know this IP?”</li>\n          <li>If not, it asks a DNS resolver (often your router or ISP, or public resolvers like 8.8.8.8).</li>\n          <li>The resolver may ask other DNS servers up the hierarchy until it finds the answer.</li>\n          <li>The IP is returned to your device, which then connects to that address.</li>\n        </ol>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 200\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"200\">\n            <rect x=\"10\" y=\"70\" width=\"90\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\"/>\n            <text x=\"55\" y=\"95\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">You</text>\n            <text x=\"55\" y=\"110\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">browser</text>\n            <line x1=\"100\" y1=\"97\" x2=\"145\" y2=\"97\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n            <text x=\"122\" y=\"88\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">1</text>\n            <rect x=\"145\" y=\"70\" width=\"100\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\"/>\n            <text x=\"195\" y=\"95\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"11\" font-family=\"system-ui\">DNS</text>\n            <text x=\"195\" y=\"110\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">resolver</text>\n            <line x1=\"245\" y1=\"97\" x2=\"290\" y2=\"97\" stroke=\"#3dd68c\" stroke-width=\"1.5\"/>\n            <text x=\"267\" y=\"88\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">2</text>\n            <rect x=\"290\" y=\"70\" width=\"100\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\"/>\n            <text x=\"340\" y=\"95\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"11\" font-family=\"system-ui\">Name</text>\n            <text x=\"340\" y=\"110\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">servers</text>\n            <line x1=\"390\" y1=\"97\" x2=\"430\" y2=\"97\" stroke=\"#a78bfa\" stroke-width=\"1.5\"/>\n            <text x=\"410\" y=\"88\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">3</text>\n            <rect x=\"430\" y=\"70\" width=\"80\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#f5a623\"/>\n            <text x=\"470\" y=\"100\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"11\" font-family=\"system-ui\">IP!</text>\n            <text x=\"260\" y=\"170\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"11\" font-family=\"system-ui\">Name → lookup → IP address returned</text>\n          </svg>\n          <div class=\"diagram-caption\">Simplified DNS lookup path</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Practical notes</h3>\n        <p>DNS usually uses <strong>UDP port 53</strong> (fast, small queries). If something fails, you might see “DNS_PROBE_FINISHED_NXDOMAIN” or similar — meaning the name couldn’t be resolved.</p>\n        <div class=\"callout warning\">Changing DNS (e.g. to Cloudflare 1.1.1.1 or Google 8.8.8.8) can sometimes fix slow or broken name resolution — a useful troubleshooting tip.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>DNS maps human-readable names to IP addresses. Without it, you’d type numbers for every website.</div>\n  ", "questions": [{"q": "What is the main job of DNS?", "options": ["Encrypt all traffic", "Translate domain names into IP addresses", "Assign private IPs on a LAN", "Block firewalls"], "answer": 1, "explain": "DNS is the internet’s phonebook: names → IPs."}, {"q": "Which port does DNS commonly use?", "options": ["80", "443", "53", "22"], "answer": 2, "explain": "DNS typically uses port 53 (often UDP for queries)."}, {"q": "Before asking a remote DNS server, your device usually:", "options": ["Reboots the router", "Checks its local DNS cache", "Disables Wi‑Fi", "Changes its public IP"], "answer": 1, "explain": "A local cache avoids repeated lookups for recently resolved names."}, {"q": "You type example.com and get an error that the name cannot be resolved. What failed?", "options": ["The TCP handshake to port 443 only", "DNS could not find an IP for that name", "Your GPU drivers", "NAT on the printer"], "answer": 1, "explain": "Name resolution failed — the browser never got an IP to connect to."}]}, {"id": "m6", "title": "OSI / TCP-IP Mental Model", "short": "Layer model", "desc": "A practical layered view of networking — enough to reason about problems, not to memorize flashcards.", "content": "\n      <div class=\"content-section\">\n        <h3>Why layers?</h3>\n        <p>Networks are complex. Engineers split the problem into <strong>layers</strong> so each piece has a clear job. You don’t need to recite all seven OSI layers — you need a useful mental model.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>A practical 4-layer view (TCP/IP model)</h3>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 460 260\" xmlns=\"http://www.w3.org/2000/svg\" width=\"460\" height=\"260\">\n            <rect x=\"40\" y=\"15\" width=\"380\" height=\"50\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#f5a623\" stroke-width=\"2\"/>\n            <text x=\"230\" y=\"38\" text-anchor=\"middle\" fill=\"#f5a623\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Application</text>\n            <text x=\"230\" y=\"55\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">HTTP, DNS, SSH — what users &amp; apps care about</text>\n            <rect x=\"40\" y=\"75\" width=\"380\" height=\"50\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"230\" y=\"98\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Transport</text>\n            <text x=\"230\" y=\"115\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">TCP / UDP — reliability, ports</text>\n            <rect x=\"40\" y=\"135\" width=\"380\" height=\"50\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <text x=\"230\" y=\"158\" text-anchor=\"middle\" fill=\"#3b9eff\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Internet / Network</text>\n            <text x=\"230\" y=\"175\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">IP — addressing &amp; routing between networks</text>\n            <rect x=\"40\" y=\"195\" width=\"380\" height=\"50\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"230\" y=\"218\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Link / Network Access</text>\n            <text x=\"230\" y=\"235\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">Ethernet, Wi‑Fi — frames on the local wire/air</text>\n          </svg>\n          <div class=\"diagram-caption\">TCP/IP layers from top (apps) to bottom (physical link)</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>How this helps troubleshooting</h3>\n        <ul>\n          <li><strong>No link light / no Wi‑Fi association?</strong> Link layer problem.</li>\n          <li><strong>Have a local IP but can’t reach the internet?</strong> Routing / gateway / IP layer.</li>\n          <li><strong>Can ping an IP but a website fails?</strong> Maybe DNS (application) or a blocked port (transport).</li>\n          <li><strong>Page loads but is wrong?</strong> Application-level issue.</li>\n        </ul>\n        <div class=\"callout\">OSI has 7 layers (Physical, Data Link, Network, Transport, Session, Presentation, Application). Map them loosely to the 4 above when you need the classic names — don’t stress memorizing every detail.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Layers separate concerns: apps → transport (TCP/UDP) → IP routing → local link. Use the model to narrow down where a problem lives.</div>\n  ", "questions": [{"q": "In the practical TCP/IP model, which layer handles IP addressing and routing?", "options": ["Application", "Transport", "Internet / Network", "Link only"], "answer": 2, "explain": "The Internet/Network layer is where IP lives — moving packets between networks."}, {"q": "TCP and UDP belong to which layer?", "options": ["Link", "Application", "Transport", "Physical only"], "answer": 2, "explain": "Transport layer: end-to-end delivery style (reliable TCP vs lightweight UDP) and ports."}, {"q": "You can ping 8.8.8.8 but cannot load google.com. What’s a likely layer to investigate?", "options": ["Only the physical cable", "DNS at the application layer (name → IP)", "Your monitor refresh rate", "Battery percentage"], "answer": 1, "explain": "Ping by IP works, so basic connectivity is fine. Name resolution (DNS) is a prime suspect."}, {"q": "Why use a layered model at all?", "options": ["It makes cables shorter", "It breaks complexity into understandable jobs and helps isolate problems", "It replaces IP addresses", "It is required by law"], "answer": 1, "explain": "Layers organize complexity and give you a checklist for troubleshooting."}]}, {"id": "m7", "title": "Switches, Routers, NAT & CGNAT", "short": "Switches, routers, NAT, CGNAT", "desc": "Build a home-network mental model: switches, routers, home NAT, and ISP CGNAT (double NAT).", "content": "\n      <div class=\"content-section\">\n        <h3>Switch — local traffic director</h3>\n        <p>A <strong>switch</strong> connects devices on the <em>same</em> LAN. It learns which MAC addresses are on which ports and forwards frames only where needed. Switches don’t typically route between different networks.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>Router — between networks</h3>\n        <p>A <strong>router</strong> connects different networks (e.g. your LAN and the internet). It makes decisions based on IP addresses and forwards packets toward their destination network. Your home “Wi‑Fi router” is usually a router + switch + Wi‑Fi access point + NAT in one box.</p>\n      </div>\n      <div class=\"content-section\">\n        <h3>NAT — many devices, one public IP</h3>\n        <p><strong>NAT (Network Address Translation)</strong> lets many private devices share one public IP. The router rewrites source addresses on outbound traffic and tracks connections so replies get back to the right device.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 520 210\" xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"210\">\n            <rect x=\"15\" y=\"30\" width=\"70\" height=\"40\" rx=\"6\" fill=\"#243044\" stroke=\"#8b9cb3\"/>\n            <text x=\"50\" y=\"55\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">PC</text>\n            <rect x=\"15\" y=\"85\" width=\"70\" height=\"40\" rx=\"6\" fill=\"#243044\" stroke=\"#8b9cb3\"/>\n            <text x=\"50\" y=\"110\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">Phone</text>\n            <rect x=\"15\" y=\"140\" width=\"70\" height=\"40\" rx=\"6\" fill=\"#243044\" stroke=\"#8b9cb3\"/>\n            <text x=\"50\" y=\"165\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"10\" font-family=\"system-ui\">TV</text>\n            <text x=\"50\" y=\"20\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">Private IPs</text>\n            <line x1=\"85\" y1=\"50\" x2=\"140\" y2=\"100\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n            <line x1=\"85\" y1=\"105\" x2=\"140\" y2=\"105\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n            <line x1=\"85\" y1=\"160\" x2=\"140\" y2=\"110\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/>\n            <rect x=\"140\" y=\"70\" width=\"130\" height=\"70\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"205\" y=\"100\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">Router + NAT</text>\n            <text x=\"205\" y=\"118\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">one public IP</text>\n            <line x1=\"270\" y1=\"105\" x2=\"340\" y2=\"105\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <polygon points=\"335,100 345,105 335,110\" fill=\"#a78bfa\"/>\n            <rect x=\"345\" y=\"70\" width=\"155\" height=\"70\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"422\" y=\"110\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"13\" font-family=\"system-ui\">Internet</text>\n          </svg>\n          <div class=\"diagram-caption\">Home mental model: private devices → router/NAT → public internet</div>\n        </div>\n      </div>\n      \n      <div class=\"content-section\">\n        <h3>CGNAT — NAT at the ISP</h3>\n        <p><strong>CGNAT (Carrier-Grade NAT)</strong>, also called <strong>LSN (Large Scale NAT)</strong>, is NAT run by your <em>internet provider</em>, not just your home router. Many customers share a pool of public IPs. Your home may get a <strong>private</strong> (or shared) address on the WAN side — so you are behind <strong>two layers of NAT</strong>: home NAT + ISP CGNAT.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 560 230\" xmlns=\"http://www.w3.org/2000/svg\" width=\"560\" height=\"230\">\n            <rect x=\"10\" y=\"80\" width=\"70\" height=\"45\" rx=\"6\" fill=\"#243044\" stroke=\"#8b9cb3\"/>\n            <text x=\"45\" y=\"107\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"11\" font-family=\"system-ui\">Home</text>\n            <text x=\"45\" y=\"70\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">private LAN</text>\n            <line x1=\"80\" y1=\"102\" x2=\"120\" y2=\"102\" stroke=\"#3b9eff\" stroke-width=\"2\"/>\n            <rect x=\"120\" y=\"70\" width=\"100\" height=\"65\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"170\" y=\"98\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"11\" font-weight=\"700\" font-family=\"system-ui\">Home NAT</text>\n            <text x=\"170\" y=\"116\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">router</text>\n            <line x1=\"220\" y1=\"102\" x2=\"265\" y2=\"102\" stroke=\"#f5a524\" stroke-width=\"2\"/>\n            <rect x=\"265\" y=\"55\" width=\"120\" height=\"95\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#f5a524\" stroke-width=\"2\"/>\n            <text x=\"325\" y=\"90\" text-anchor=\"middle\" fill=\"#f5a524\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">CGNAT</text>\n            <text x=\"325\" y=\"108\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">ISP translates</text>\n            <text x=\"325\" y=\"122\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">many customers</text>\n            <text x=\"325\" y=\"136\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">→ few public IPs</text>\n            <line x1=\"385\" y1=\"102\" x2=\"430\" y2=\"102\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <rect x=\"430\" y=\"70\" width=\"115\" height=\"65\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\" stroke-width=\"2\"/>\n            <text x=\"487\" y=\"100\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text>\n            <text x=\"487\" y=\"118\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"9\" font-family=\"system-ui\">public IPs</text>\n          </svg>\n          <div class=\"diagram-caption\">Double NAT path: devices → home router NAT → ISP CGNAT → public internet</div>\n        </div>\n        <h3>How CGNAT works (step by step)</h3>\n        <ol>\n          <li>Your device sends traffic with a private LAN source IP (e.g. <code>192.168.1.50</code>).</li>\n          <li><strong>Home NAT</strong> rewrites that to the router’s WAN address (often another private/shared range, e.g. <code>100.64.x.x</code> — the shared CGNAT space).</li>\n          <li><strong>CGNAT</strong> at the ISP rewrites again to a real <strong>public</strong> IP and tracks the mapping (IP + port) so return traffic finds your session.</li>\n          <li>Many households can share one public IP at once because CGNAT also maps <strong>ports</strong>, not only addresses.</li>\n        </ol>\n        <h3>Why ISPs use it</h3>\n        <ul>\n          <li>IPv4 addresses are scarce and expensive — CGNAT stretches the pool.</li>\n          <li>Common on mobile networks and some home fiber/cable plans.</li>\n        </ul>\n        <h3>What breaks (or gets harder)</h3>\n        <ul>\n          <li><strong>Inbound connections</strong> — hosting a game server, camera, or “port forward” from the public internet often fails, because you don’t control the ISP NAT.</li>\n          <li><strong>Port forwarding</strong> on your router only opens the home layer; CGNAT can still block unsolicited inbound traffic.</li>\n          <li>Some peer-to-peer apps need workarounds (relays, IPv6, or a real public IP / VPN with port forwarding).</li>\n        </ul>\n        <div class=\"callout\">Clue you might be on CGNAT: your router’s WAN IP is in <code>100.64.0.0/10</code> (shared address space), or a “what is my IP” site shows an address that doesn’t match your router’s WAN IP.</div>\n      </div>\n<div class=\"callout\">Port forwarding is intentionally opening a path through NAT so an outside client can reach a specific internal device/port — useful for game servers or cameras, but increases attack surface if misused.</div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Switches keep local traffic local. Routers connect networks. Home NAT shares one public IP at your house — CGNAT is the ISP doing NAT too, so many customers share public IPs (often as double NAT).</div>\n  ", "questions": [{"q": "What does a switch primarily do?", "options": ["Connect different networks using IP routing", "Forward frames between devices on the same LAN", "Assign public IP addresses from IANA", "Encrypt HTTPS"], "answer": 1, "explain": "Switches operate within a LAN, forwarding based on MAC addresses."}, {"q": "What is the main role of a router?", "options": ["Only provide Wi‑Fi passwords", "Connect different networks and forward packets by IP", "Replace DNS entirely", "Store website files"], "answer": 1, "explain": "Routers move traffic between networks using IP routing decisions."}, {"q": "Why do home networks use NAT?", "options": ["To make Wi‑Fi slower on purpose", "So many private devices can share one public IP", "Because switches cannot use Ethernet", "To disable all ports"], "answer": 1, "explain": "NAT maps many internal private addresses onto one (or few) public addresses."}, {"q": "Your home Wi‑Fi “router” box often includes:", "options": ["Only a modem and nothing else", "Router + switch + Wi‑Fi AP + NAT combined", "Only a DNS root server", "A full ISP backbone"], "answer": 1, "explain": "Consumer gateways bundle several functions into one device."}, {"q": "What is CGNAT?", "options": ["A type of Wi‑Fi password", "NAT run by the ISP so many customers share public IPv4 addresses", "A switch feature that replaces Ethernet cables", "An HTTPS status code"], "answer": 1, "explain": "Carrier-Grade NAT (CGNAT) is large-scale NAT at the provider, sharing scarce public IPv4 addresses across customers."}, {"q": "Why can port forwarding fail even if you set it on your home router?", "options": ["Because DNS does not exist", "Because you may also be behind ISP CGNAT, which blocks unsolicited inbound traffic", "Because switches delete all ports", "Because HTTPS forbids all games"], "answer": 1, "explain": "Home port forwarding only opens your router’s NAT. CGNAT is another layer you don’t control, so inbound connections often still fail."}]}, {"id": "m8", "title": "HTTP / HTTPS Basics", "short": "HTTP & HTTPS", "desc": "See what a web request/response looks like and why HTTPS matters.", "content": "\n      <div class=\"content-section\">\n        <h3>HTTP — the web’s conversation</h3>\n        <p><strong>HTTP (HyperText Transfer Protocol)</strong> is how browsers and web servers talk. The client sends a <strong>request</strong>; the server sends a <strong>response</strong>.</p>\n        <div class=\"code-block\">GET /index.html HTTP/1.1\nHost: example.com\nUser-Agent: Mozilla/5.0\nAccept: text/html</div>\n        <p>A simplified response:</p>\n        <div class=\"code-block\">HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 1234\n\n&lt;html&gt;...page content...&lt;/html&gt;</div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Common methods &amp; status codes</h3>\n        <ul>\n          <li><strong>GET</strong> — retrieve a resource</li>\n          <li><strong>POST</strong> — submit data (forms, APIs)</li>\n          <li><span class=\"tag\">200</span> OK &nbsp; <span class=\"tag\">301</span>/<span class=\"tag\">302</span> redirect &nbsp; <span class=\"tag\">404</span> not found &nbsp; <span class=\"tag\">500</span> server error</li>\n        </ul>\n      </div>\n      <div class=\"content-section\">\n        <h3>HTTPS — HTTP with encryption</h3>\n        <p><strong>HTTPS</strong> is HTTP over <strong>TLS</strong> (encryption). It protects data in transit from eavesdropping and tampering, and helps verify you’re talking to the real server (via certificates).</p>\n        <p>HTTPS uses port <span class=\"tag\">443</span>. Prefer HTTPS whenever credentials or personal data are involved — which is basically always on the modern web.</p>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 480 140\" xmlns=\"http://www.w3.org/2000/svg\" width=\"480\" height=\"140\">\n            <rect x=\"30\" y=\"40\" width=\"100\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\"/>\n            <text x=\"80\" y=\"72\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Browser</text>\n            <line x1=\"130\" y1=\"67\" x2=\"200\" y2=\"67\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"165\" y=\"55\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"10\" font-family=\"system-ui\">TLS 🔒</text>\n            <rect x=\"200\" y=\"30\" width=\"120\" height=\"75\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <text x=\"260\" y=\"60\" text-anchor=\"middle\" fill=\"#3dd68c\" font-size=\"12\" font-weight=\"700\" font-family=\"system-ui\">HTTPS</text>\n            <text x=\"260\" y=\"80\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">port 443</text>\n            <line x1=\"320\" y1=\"67\" x2=\"390\" y2=\"67\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <rect x=\"390\" y=\"40\" width=\"70\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#a78bfa\"/>\n            <text x=\"425\" y=\"72\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Server</text>\n          </svg>\n          <div class=\"diagram-caption\">HTTPS wraps HTTP inside an encrypted TLS tunnel</div>\n        </div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>HTTP is request/response for the web. HTTPS adds encryption and identity checks — use it by default.</div>\n  ", "questions": [{"q": "In HTTP, who typically sends the request?", "options": ["Only the server", "The client (e.g. browser)", "The DNS root", "The switch"], "answer": 1, "explain": "Clients request; servers respond."}, {"q": "What does a 404 status code mean?", "options": ["Success", "Resource not found", "Server is encrypting", "DNS failed only"], "answer": 1, "explain": "404 = the server couldn’t find the requested resource."}, {"q": "What does HTTPS add on top of HTTP?", "options": ["Faster spinning hard drives", "Encryption (TLS) and certificate-based server identity", "A new IP version", "Removal of all ports"], "answer": 1, "explain": "HTTPS = HTTP over TLS for confidentiality, integrity, and authentication."}, {"q": "Which port does HTTPS normally use?", "options": ["80", "22", "443", "53"], "answer": 2, "explain": "HTTPS → 443; HTTP → 80."}]}, {"id": "m9", "title": "Firewalls & Basic Security", "short": "Firewalls & security", "desc": "Understand allow/deny rules and why basic network security habits matter.", "content": "\n      <div class=\"content-section\">\n        <h3>What a firewall does</h3>\n        <p>A <strong>firewall</strong> filters network traffic based on rules — typically <strong>allow</strong> or <strong>deny</strong> — using information like IP addresses, ports, and direction (inbound vs outbound).</p>\n        <p>Firewalls exist as:</p>\n        <ul>\n          <li>Software on your computer (OS firewall)</li>\n          <li>Features in your home router</li>\n          <li>Dedicated appliances in companies</li>\n        </ul>\n      </div>\n      <div class=\"content-section\">\n        <h3>Allow / deny thinking</h3>\n        <p>A common secure approach is <strong>default deny</strong>: block everything, then explicitly allow what you need. Example mental rules:</p>\n        <ul>\n          <li>Allow outbound HTTPS (443) so browsing works</li>\n          <li>Deny inbound SSH (22) from the internet unless you really need it</li>\n          <li>Allow LAN devices to talk to each other as needed</li>\n        </ul>\n        <div class=\"diagram\">\n          <svg viewBox=\"0 0 480 150\" xmlns=\"http://www.w3.org/2000/svg\" width=\"480\" height=\"150\">\n            <rect x=\"20\" y=\"45\" width=\"100\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#8b9cb3\"/>\n            <text x=\"70\" y=\"77\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text>\n            <line x1=\"120\" y1=\"72\" x2=\"170\" y2=\"72\" stroke=\"#f56565\" stroke-width=\"2\"/>\n            <rect x=\"170\" y=\"35\" width=\"140\" height=\"75\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#f56565\" stroke-width=\"2\"/>\n            <text x=\"240\" y=\"65\" text-anchor=\"middle\" fill=\"#f56565\" font-size=\"13\" font-weight=\"700\" font-family=\"system-ui\">Firewall</text>\n            <text x=\"240\" y=\"85\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">allow / deny rules</text>\n            <line x1=\"310\" y1=\"72\" x2=\"360\" y2=\"72\" stroke=\"#3dd68c\" stroke-width=\"2\"/>\n            <rect x=\"360\" y=\"45\" width=\"100\" height=\"55\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3dd68c\"/>\n            <text x=\"410\" y=\"77\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Your LAN</text>\n          </svg>\n          <div class=\"diagram-caption\">Firewall sits between untrusted and trusted networks</div>\n        </div>\n      </div>\n      <div class=\"content-section\">\n        <h3>Why it matters (basics)</h3>\n        <ul>\n          <li>Reduces exposure of services you didn’t mean to publish</li>\n          <li>Limits damage if a device is compromised</li>\n          <li>Works together with strong passwords, updates, and HTTPS</li>\n        </ul>\n        <div class=\"callout warning\">A firewall is not magic — it’s one layer. Keep software updated, don’t reuse passwords, and be careful what you install or click.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Firewalls enforce allow/deny rules on traffic. Default-deny plus explicit allows is a solid baseline. Security is layered — firewalls are one important piece.</div>\n  ", "questions": [{"q": "What does a firewall primarily do?", "options": ["Speed up DNS only", "Filter traffic according to allow/deny rules", "Replace all routers", "Assign MAC addresses"], "answer": 1, "explain": "Firewalls permit or block traffic based on configured rules."}, {"q": "What does “default deny” mean?", "options": ["Allow everything unless blocked", "Block everything unless explicitly allowed", "Disable the network card", "Only allow UDP"], "answer": 1, "explain": "Default deny starts closed and opens only what’s needed — a safer baseline."}, {"q": "Why might you deny inbound port 22 from the internet on a home router?", "options": ["SSH is illegal", "To avoid exposing remote login to the whole internet unless required", "Port 22 cannot work through NAT ever", "Because HTTPS uses 22"], "answer": 1, "explain": "Leaving SSH open to the world invites brute-force and attacks if not carefully secured."}, {"q": "Is a firewall enough security by itself?", "options": ["Yes — nothing else matters", "No — it is one layer alongside updates, strong auth, and safe habits", "Yes if it is blue", "Only on Wednesdays"], "answer": 1, "explain": "Defense in depth: firewalls help, but they don’t replace patching, authentication, and good practices."}]}, {"id": "m10", "title": "Capstone Scenario Quiz", "short": "Capstone", "desc": "Tie it all together with scenario questions spanning the whole guide.", "content": "\n      <div class=\"content-section\">\n        <h3>You’ve made it to the capstone</h3>\n        <p>This module is a short review scenario set. You’ll apply LAN/WAN, IPs, ports, TCP/UDP, DNS, layers, NAT, HTTP/HTTPS, and firewalls together.</p>\n        <div class=\"callout\">Read each scenario carefully. There is no new lecture — just integrated practice. Score 70%+ to complete the guide.</div>\n      </div>\n      <div class=\"takeaway\"><strong>Key takeaway</strong>Real networking problems mix concepts: connectivity, naming, ports, protocols, and policy. Trace the path from user action → DNS → IP → transport → app, and check each hop.</div>\n  ", "questions": [{"q": "You open https://shop.example.com. Your laptop has IP 192.168.1.20. Which statement is true?", "options": ["192.168.1.20 is a public IP unique on the internet", "DNS must resolve shop.example.com to an IP before the HTTPS connection can start", "HTTPS uses UDP port 80 only", "A switch alone routes this traffic onto another continent"], "answer": 1, "explain": "Name → IP via DNS first; 192.168.x.x is private; HTTPS is TCP/443."}, {"q": "A game feels smooth but occasionally loses a position update. The design likely favors:", "options": ["TCP only with infinite retries for every packet", "UDP for timely updates where late data is useless", "FTP for real-time state", "Disabling all ports"], "answer": 1, "explain": "Real-time games often prefer UDP’s low latency over perfect reliability."}, {"q": "Home PC (private IP) browses the web successfully. What enables many devices to share one public IP?", "options": ["DNSSEC alone", "NAT on the home router", "A layer-1 hub only", "IPv6 being mandatory everywhere"], "answer": 1, "explain": "NAT maps internal private addresses to the household’s public IP."}, {"q": "Ping to 1.1.1.1 works; browsing by name fails with a resolve error. Best next focus?", "options": ["Replace the Ethernet cable immediately and stop", "DNS configuration / resolver reachability", "Buy a new GPU", "Disable TLS forever"], "answer": 1, "explain": "IP connectivity works; name resolution is the broken piece."}, {"q": "You want the web open outbound but no random inbound services from the internet. A sensible firewall stance is:", "options": ["Allow all inbound and outbound", "Default deny inbound; allow needed outbound (e.g. 443)", "Block all outbound HTTPS", "Only filter based on screen brightness"], "answer": 1, "explain": "Default-deny inbound reduces exposure; allow outbound web as needed."}, {"q": "You set port forwarding on your router but friends still cannot connect. A likely cause is:", "options": ["Your switch ran out of MAC addresses", "CGNAT at the ISP blocking inbound connections", "HTTP status 200", "DNS only works on Tuesdays"], "answer": 1, "explain": "With CGNAT, inbound traffic often never reaches your home router even if local port forwarding is configured."}]}];
+
+function defaultState() {
+  return { unlocked: 0, completed: {}, current: null };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) { return defaultState(); }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+let state = loadState();
+
+function $(sel) { return document.querySelector(sel); }
+function completedCount() {
+  return MODULES.filter(m => state.completed[m.id] && state.completed[m.id].passed).length;
+}
+function updateProgressUI() {
+  const done = completedCount();
+  const total = MODULES.length;
+  const pct = Math.round((done / total) * 100);
+  $('#progCurrent').textContent = done;
+  $('#progTotal').textContent = total;
+  $('#progPct').textContent = pct;
+  $('#progBar').style.width = pct + '%';
+}
+function closeMobile() {
+  $('#sidebar').classList.remove('open');
+  $('#sidebarOverlay').classList.remove('open');
+}
+function renderNav() {
+  const nav = $('#moduleNav');
+  nav.innerHTML = '';
+  const welcomeLi = document.createElement('li');
+  welcomeLi.className = 'module-nav-item' + (state.current === null ? ' active' : '');
+  welcomeLi.innerHTML = '<span class="nav-icon">⌂</span><span>Welcome</span>';
+  welcomeLi.addEventListener('click', () => { state.current = null; saveState(state); render(); closeMobile(); });
+  nav.appendChild(welcomeLi);
+  MODULES.forEach((mod, i) => {
+    const isLocked = i > state.unlocked;
+    const isDone = !!(state.completed[mod.id] && state.completed[mod.id].passed);
+    const isActive = state.current === i;
+    const li = document.createElement('li');
+    li.className = 'module-nav-item' + (isLocked ? ' locked' : '') + (isDone ? ' completed' : '') + (isActive ? ' active' : '');
+    let icon = String(i + 1);
+    if (isDone) icon = '✓';
+    if (isLocked) icon = '🔒';
+    li.innerHTML = '<span class="nav-icon">' + icon + '</span><span>' + mod.short + '</span>';
+    if (!isLocked) {
+      li.addEventListener('click', () => { state.current = i; saveState(state); render(); closeMobile(); });
+    }
+    nav.appendChild(li);
+  });
+}
+function renderWelcome() {
+  const done = completedCount();
+  let cta = '';
+  if (done === MODULES.length) {
+    cta = '<button class="btn btn-success" id="startBtn">Review modules</button>';
+  } else {
+    cta = '<button class="btn btn-primary" id="startBtn">' + (done === 0 && state.unlocked === 0 ? 'Start Module 1' : 'Continue learning') + '</button>';
+  }
+  $('#mainContent').innerHTML =
+    '<div class="welcome">' +
+    '<h2>Networking Fundamentals</h2>' +
+    '<p>An interactive, progressive study guide. Complete each module’s quiz (70%+) to unlock the next. Your progress is saved in this browser.</p>' +
+    '<p style="margin-bottom:1.5rem;color:var(--text-muted);font-size:0.9rem;">' + done + ' of ' + MODULES.length + ' modules completed · ' + Math.round(done / MODULES.length * 100) + '%</p>' +
+    cta +
+    '<div style="margin-top:2.5rem;text-align:left;max-width:480px;margin-left:auto;margin-right:auto;">' +
+    '<h3 style="font-size:1rem;margin-bottom:0.75rem;color:var(--text-muted);">Curriculum</h3>' +
+    '<ol style="color:var(--text-muted);font-size:0.9rem;padding-left:1.2rem;">' +
+    MODULES.map((m, i) => {
+      const mark = (state.completed[m.id] && state.completed[m.id].passed) ? ' ✓' : (i > state.unlocked ? ' 🔒' : '');
+      return '<li style="margin-bottom:0.35rem;">' + m.title + mark + '</li>';
+    }).join('') +
+    '</ol></div></div>';
+  const btn = $('#startBtn');
+  if (btn) btn.addEventListener('click', () => {
+    state.current = (done === MODULES.length) ? 0 : Math.min(state.unlocked, MODULES.length - 1);
+    saveState(state); render();
+  });
+}
+function renderModule(idx) {
+  const mod = MODULES[idx];
+  const prevCompleted = state.completed[mod.id];
+  $('#mainContent').innerHTML =
+    '<div class="module-header">' +
+    '<span class="module-badge">Module ' + (idx + 1) + ' of ' + MODULES.length + '</span>' +
+    '<h2>' + mod.title + '</h2>' +
+    '<p class="desc">' + mod.desc + '</p></div>' +
+    mod.content +
+    '<div class="quiz-section" id="quizSection">' +
+    '<h3>Check your understanding</h3>' +
+    '<p class="quiz-meta">Answer all questions, then submit. You need ' + Math.ceil(PASS_THRESHOLD * 100) + '% to unlock the next module.</p>' +
+    '<div id="questions"></div>' +
+    '<div class="quiz-actions">' +
+    '<button class="btn btn-primary" id="submitQuiz">Submit quiz</button>' +
+    '<button class="btn btn-secondary hidden" id="retryQuiz">Retry quiz</button>' +
+    '</div><div class="score-panel" id="scorePanel"></div></div>' +
+    '<div class="nav-buttons">' +
+    '<button class="btn btn-secondary" id="prevBtn">' + (idx === 0 ? '← Welcome' : '← Previous') + '</button>' +
+    '<button class="btn btn-primary" id="nextBtn" ' + ((idx >= state.unlocked || idx === MODULES.length - 1) ? 'disabled' : '') + '>' +
+    (idx === MODULES.length - 1 ? 'Finish' : 'Next module →') + '</button></div>';
+
+  const qContainer = $('#questions');
+  mod.questions.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.dataset.qi = qi;
+    div.innerHTML =
+      '<div class="question-text">' + (qi + 1) + '. ' + q.q + '</div><div class="options">' +
+      q.options.map((opt, oi) =>
+        '<label class="option"><input type="radio" name="q' + qi + '" value="' + oi + '"><span>' + opt + '</span></label>'
+      ).join('') +
+      '</div><div class="explanation" id="exp' + qi + '"></div>';
+    qContainer.appendChild(div);
+  });
+  qContainer.querySelectorAll('.option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.classList.contains('disabled')) return;
+      const name = opt.querySelector('input').name;
+      qContainer.querySelectorAll('input[name="' + name + '"]').forEach(inp => {
+        inp.closest('.option').classList.remove('selected');
+      });
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+    });
+  });
+  $('#submitQuiz').addEventListener('click', () => gradeQuiz(idx));
+  $('#retryQuiz').addEventListener('click', () => {
+    saveState(state);
+    renderModule(idx);
+    updateProgressUI();
+    renderNav();
+    window.scrollTo({ top: $('#quizSection').offsetTop - 20, behavior: 'smooth' });
+  });
+  $('#prevBtn').addEventListener('click', () => {
+    state.current = idx === 0 ? null : idx - 1;
+    saveState(state); render();
+  });
+  $('#nextBtn').addEventListener('click', () => {
+    if (idx < MODULES.length - 1 && idx < state.unlocked) {
+      state.current = idx + 1; saveState(state); render();
+    } else if (idx === MODULES.length - 1 && state.completed[mod.id] && state.completed[mod.id].passed) {
+      state.current = null; saveState(state); render();
+    }
+  });
+  if (prevCompleted && prevCompleted.passed) {
+    showScore(idx, prevCompleted.score, prevCompleted.total, true, true);
+  }
+  const nextBtn = $('#nextBtn');
+  if (idx < MODULES.length - 1 && state.unlocked > idx) nextBtn.disabled = false;
+  if (idx === MODULES.length - 1 && state.completed[mod.id] && state.completed[mod.id].passed) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Back to welcome →';
+  }
+}
+function gradeQuiz(idx) {
+  const mod = MODULES[idx];
+  let correct = 0;
+  const total = mod.questions.length;
+  let allAnswered = true;
+  mod.questions.forEach((q, qi) => {
+    if (!document.querySelector('input[name="q' + qi + '"]:checked')) allAnswered = false;
+  });
+  if (!allAnswered) { alert('Please answer all questions before submitting.'); return; }
+  mod.questions.forEach((q, qi) => {
+    const selected = document.querySelector('input[name="q' + qi + '"]:checked');
+    const chosen = parseInt(selected.value, 10);
+    const qEl = document.querySelector('.question[data-qi="' + qi + '"]');
+    const exp = $('#exp' + qi);
+    qEl.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
+    qEl.querySelectorAll('input').forEach(i => { i.disabled = true; });
+    qEl.querySelectorAll('.option').forEach((o, oi) => {
+      if (oi === q.answer) o.classList.add('correct');
+      if (oi === chosen && chosen !== q.answer) o.classList.add('incorrect');
+    });
+    if (chosen === q.answer) {
+      correct++;
+      qEl.classList.add('answered-correct');
+      exp.className = 'explanation show correct-exp';
+      exp.textContent = '✓ Correct. ' + q.explain;
+    } else {
+      qEl.classList.add('answered-wrong');
+      exp.className = 'explanation show wrong-exp';
+      exp.textContent = '✗ Not quite. ' + q.explain;
+    }
+  });
+  const ratio = correct / total;
+  const passed = ratio >= PASS_THRESHOLD;
+  state.completed[mod.id] = { score: correct, total: total, passed: passed };
+  if (passed && idx + 1 < MODULES.length && state.unlocked < idx + 1) {
+    state.unlocked = idx + 1;
+  }
+  saveState(state);
+  showScore(idx, correct, total, passed, false);
+  updateProgressUI();
+  renderNav();
+  const nextBtn = $('#nextBtn');
+  if (passed && idx < MODULES.length - 1) nextBtn.disabled = false;
+  if (passed && idx === MODULES.length - 1) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Back to welcome →';
+  }
+}
+function showScore(idx, score, total, passed, fromCache) {
+  const panel = $('#scorePanel');
+  const pct = Math.round((score / total) * 100);
+  panel.className = 'score-panel show ' + (passed ? 'pass' : 'fail');
+  let msg;
+  if (passed) {
+    msg = idx < MODULES.length - 1 ? 'Next module unlocked. Great work!' : '🎉 You completed the Networking Fundamentals guide!';
+  } else {
+    msg = 'You need at least ' + Math.ceil(PASS_THRESHOLD * 100) + '% to unlock the next module. Review the explanations and retry.';
+  }
+  panel.innerHTML =
+    '<div class="score-num">' + score + '/' + total + '</div>' +
+    '<p style="font-weight:600;margin-bottom:0.5rem;">' + pct + '% — ' + (passed ? 'Passed!' : 'Not yet — keep going') + '</p>' +
+    '<p style="font-size:0.9rem;color:var(--text-muted);">' + msg + '</p>';
+  $('#submitQuiz').classList.add('hidden');
+  $('#retryQuiz').classList.remove('hidden');
+  if (!fromCache) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function render() {
+  updateProgressUI();
+  renderNav();
+  if (state.current === null) renderWelcome();
+  else renderModule(state.current);
+  window.scrollTo({ top: 0 });
+}
+$('#hamburger').addEventListener('click', () => {
+  $('#sidebar').classList.toggle('open');
+  $('#sidebarOverlay').classList.toggle('open');
+});
+$('#sidebarOverlay').addEventListener('click', closeMobile);
+$('#resetBtn').addEventListener('click', () => $('#resetModal').classList.add('open'));
+$('#resetCancel').addEventListener('click', () => $('#resetModal').classList.remove('open'));
+$('#resetConfirm').addEventListener('click', () => {
+  state = defaultState();
+  saveState(state);
+  $('#resetModal').classList.remove('open');
+  render();
+});
+render();
+
+</script>
+</body>
+</html>

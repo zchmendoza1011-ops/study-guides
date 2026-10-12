@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networking Fundamentals v2 — Interactive Study Guide</title>
+<style>
+:root {
+  --bg:#0f1419; --bg-elevated:#1a2332; --bg-card:#1e2a3a; --bg-hover:#243044;
+  --border:#2d3a4f; --text:#e8eef6; --text-muted:#8b9cb3;
+  --accent:#3b9eff; --accent-soft:rgba(59,158,255,.15);
+  --success:#3dd68c; --success-soft:rgba(61,214,140,.15);
+  --warning:#f5a623; --warning-soft:rgba(245,166,35,.15);
+  --danger:#f56565; --danger-soft:rgba(245,101,101,.15);
+  --locked:#4a5568; --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.35);
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"SF Mono","Cascadia Code",Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:var(--bg-elevated);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1rem}
+.sidebar-brand{padding:.5rem .75rem 1rem;border-bottom:1px solid var(--border)}
+.sidebar-brand h1{font-size:1.05rem;font-weight:700;line-height:1.3}
+.sidebar-brand .subtitle{font-size:.75rem;color:var(--text-muted);margin-top:.25rem}
+.progress-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.progress-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem}
+.progress-label strong{color:var(--accent)}
+.progress-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#6bc1ff);border-radius:4px;transition:width .4s ease;width:0%}
+.module-nav{list-style:none;display:flex;flex-direction:column;gap:.35rem;flex:1}
+.module-nav-item{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text-muted);border:1px solid transparent;transition:all .15s;user-select:none}
+.module-nav-item:hover:not(.locked){background:var(--bg-hover);color:var(--text)}
+.module-nav-item.active{background:var(--accent-soft);color:var(--accent);border-color:rgba(59,158,255,.3)}
+.module-nav-item.completed{color:var(--success)}
+.module-nav-item.locked{opacity:.45;cursor:not-allowed}
+.nav-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;background:var(--border);color:var(--text-muted)}
+.module-nav-item.active .nav-icon{background:var(--accent);color:#fff}
+.module-nav-item.completed .nav-icon{background:var(--success);color:#0f1419}
+.module-nav-item.locked .nav-icon{background:var(--locked)}
+.sidebar-actions{padding-top:.75rem;border-top:1px solid var(--border)}
+.btn-reset{width:100%;padding:.55rem;background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.8rem;transition:all .15s}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.main{padding:2rem 2.5rem 4rem;max-width:820px;width:100%;margin:0 auto}
+.mobile-header{display:none;background:var(--bg-elevated);border-bottom:1px solid var(--border);padding:.75rem 1rem;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.mobile-header h1{font-size:.95rem;font-weight:700}
+.hamburger{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:.4rem .7rem;border-radius:6px;cursor:pointer;font-size:1.1rem}
+.welcome{text-align:center;padding:3rem 1rem}
+.welcome h2{font-size:1.85rem;margin-bottom:.75rem;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.welcome p{color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem}
+.module-header{margin-bottom:1.75rem}
+.module-badge{display:inline-block;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);background:var(--accent-soft);padding:.25rem .65rem;border-radius:20px;margin-bottom:.75rem}
+.module-header h2{font-size:1.65rem;font-weight:700;margin-bottom:.4rem}
+.module-header .desc{color:var(--text-muted);font-size:.95rem}
+.content-section{margin-bottom:1.75rem}
+.content-section h3{font-size:1.15rem;margin-bottom:.65rem}
+.content-section p{margin-bottom:.85rem}
+.content-section ul,.content-section ol{margin:.5rem 0 1rem 1.4rem}
+.content-section li{margin-bottom:.4rem}
+.takeaway{background:var(--success-soft);border:1px solid rgba(61,214,140,.35);border-left:4px solid var(--success);border-radius:8px;padding:1rem 1.15rem;margin:1.5rem 0}
+.takeaway strong{color:var(--success);display:block;margin-bottom:.3rem;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em}
+.diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin:1.25rem 0;overflow-x:auto}
+.diagram svg{display:block;margin:0 auto;max-width:100%}
+.diagram-caption{text-align:center;font-size:.8rem;color:var(--text-muted);margin-top:.75rem}
+.code-block{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem;font-family:var(--mono);font-size:.85rem;overflow-x:auto;margin:1rem 0;color:#a8c0d8;white-space:pre;line-height:1.5}
+.callout{background:var(--accent-soft);border:1px solid rgba(59,158,255,.3);border-radius:8px;padding:.9rem 1.1rem;margin:1rem 0;font-size:.92rem}
+.callout.warning{background:var(--warning-soft);border-color:rgba(245,166,35,.35)}
+.quiz-section{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:2rem}
+.quiz-section h3{font-size:1.2rem;margin-bottom:.35rem}
+.quiz-meta{font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem}
+.question{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.15rem;margin-bottom:1rem}
+.question.answered-correct{border-color:rgba(61,214,140,.5)}
+.question.answered-wrong{border-color:rgba(245,101,101,.5)}
+.question-text{font-weight:600;margin-bottom:.85rem;font-size:.95rem}
+.options{display:flex;flex-direction:column;gap:.45rem}
+.option{display:flex;align-items:flex-start;gap:.65rem;padding:.65rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:.9rem}
+.option:hover:not(.disabled){border-color:var(--accent);background:var(--accent-soft)}
+.option.selected{border-color:var(--accent);background:var(--accent-soft)}
+.option.correct{border-color:var(--success);background:var(--success-soft)}
+.option.incorrect{border-color:var(--danger);background:var(--danger-soft)}
+.option.disabled{cursor:default}
+.option input{margin-top:.2rem;accent-color:var(--accent)}
+.explanation{margin-top:.75rem;padding:.75rem;border-radius:6px;font-size:.88rem;display:none}
+.explanation.show{display:block}
+.explanation.correct-exp{background:var(--success-soft);color:var(--success)}
+.explanation.wrong-exp{background:var(--danger-soft);color:#fca5a5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.65rem 1.25rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#2b8eef}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:var(--bg-card);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg-hover)}
+.btn-success{background:var(--success);color:#0f1419}
+.btn-success:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(1.1)}
+.quiz-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+.score-panel{text-align:center;padding:1.5rem;margin-top:1rem;border-radius:var(--radius);display:none}
+.score-panel.show{display:block}
+.score-panel.pass{background:var(--success-soft);border:1px solid rgba(61,214,140,.4)}
+.score-panel.fail{background:var(--warning-soft);border:1px solid rgba(245,166,35,.4)}
+.score-panel .score-num{font-size:2.5rem;font-weight:800;margin-bottom:.25rem}
+.score-panel.pass .score-num{color:var(--success)}
+.score-panel.fail .score-num{color:var(--warning)}
+.nav-buttons{display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90}
+.sidebar-overlay.open{display:block}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;max-width:400px;width:100%;box-shadow:var(--shadow)}
+.modal h3{margin-bottom:.65rem}
+.modal p{color:var(--text-muted);margin-bottom:1.25rem;font-size:.92rem}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end}
+.hidden{display:none!important}
+.tag{display:inline-block;font-size:.75rem;padding:.15rem .5rem;border-radius:4px;background:var(--bg);border:1px solid var(--border);font-family:var(--mono);color:var(--accent)}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;z-index:100;width:280px;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-header{display:flex}
+  .main{padding:1.25rem 1rem 3rem}
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-header">
+  <h1>Networking Fundamentals v2</h1>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h1>Networking Fundamentals v2</h1>
+      <div class="subtitle">Interactive Study Guide</div>
+    </div>
+    <div class="progress-panel">
+      <div class="progress-label">
+        <span>Module <strong id="progCurrent">0</strong> of <strong id="progTotal">10</strong></span>
+        <span><strong id="progPct">0</strong>%</span>
+      </div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progBar"></div></div>
+    </div>
+    <ul class="module-nav" id="moduleNav"></ul>
+    <div class="sidebar-actions">
+      <button class="btn-reset" id="resetBtn">Reset Progress</button>
+    </div>
+  </aside>
+  <main class="main" id="mainContent"></main>
+</div>
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>Reset all progress?</h3>
+    <p>This will lock all modules again and clear your quiz scores. You can’t undo this.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="resetCancel">Cancel</button>
+      <button class="btn btn-danger" id="resetConfirm">Reset</button>
+    </div>
+  </div>
+</div>
+<script>
+
+const STORAGE_KEY = 'netStudyGuide_v2';
+const PASS_THRESHOLD = 0.7;
+const MODULES = [{"id": "m1", "title": "What is a Network?", "short": "LAN/WAN, clients & servers", "desc": "What a network actually is, how LANs and WANs differ, and who asks vs. who answers.", "content": "<div class=\"content-section\"><h3>The simple definition</h3><p>A <strong>network</strong> is two or more devices connected so they can exchange data. The connection can be a cable (Ethernet), radio (Wi‑Fi, cellular), or light (fiber).</p><p>Real-world example: your phone, laptop, smart TV and printer at home all talk to your router — that's a network. When the laptop prints, the data never leaves the house.</p></div><div class=\"content-section\"><h3>LAN vs WAN</h3><ul><li><strong>LAN (Local Area Network)</strong> — one home, office floor, or building. You own/control it. Fast and low latency.</li><li><strong>WAN (Wide Area Network)</strong> — links networks across cities or countries. Usually provided by an ISP or carrier. The internet is the biggest WAN.</li></ul><div class=\"callout\">At work: each branch office has its own LAN; the links connecting the branches to headquarters form the company WAN.</div><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Laptop</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">LAN</text><line x1=\"110\" y1=\"48\" x2=\"150\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"150\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"200.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Router</text><text x=\"200.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">your edge</text><line x1=\"250\" y1=\"48\" x2=\"290\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"290\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"340.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">ISP</text><text x=\"340.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">WAN</text><line x1=\"390\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">many networks</text></svg></div></div><div class=\"content-section\"><h3>Clients and servers</h3><p>A <strong>client</strong> starts a request (your browser asking for a web page). A <strong>server</strong> listens and answers (the website). It's a role, not a type of hardware — your PC is a client when browsing and a server when sharing a folder.</p></div><div class=\"content-section\"><h3>Other words you'll hear</h3><ul><li><strong>Node / host</strong> — any device on the network.</li><li><strong>Bandwidth</strong> — how much data per second a link can carry.</li><li><strong>Latency</strong> — how long data takes to get there (ms).</li></ul></div><div class=\"takeaway\"><strong>Key takeaway</strong>A network is connected devices sharing data. LAN = local and yours; WAN = long distance and usually an ISP's. Clients ask, servers answer — any device can play either role.</div>", "questions": [{"q": "Which best describes a LAN?", "options": ["A wireless-only network", "A network in a limited area like a home or office", "The public internet", "A network that spans countries"], "answer": 1, "explain": "LAN = Local Area Network: one home, office or building."}, {"q": "The internet is best described as…", "options": ["A type of cable", "A server", "A single LAN", "The largest WAN — a network of networks"], "answer": 3, "explain": "The internet connects millions of independent networks across the globe."}, {"q": "Your PC shares a folder that a coworker opens. In that moment your PC is acting as a…", "options": ["Server", "Gateway", "Switch", "Client"], "answer": 0, "explain": "The device answering the request is the server. Client/server is a role."}, {"q": "Latency measures…", "options": ["The delay for data to travel from A to B", "The number of devices on a LAN", "How much data a link can carry per second", "Wi‑Fi signal strength"], "answer": 0, "explain": "Latency is delay (ms). Bandwidth is capacity."}, {"q": "Two branch offices connected through a carrier's link are an example of…", "options": ["A WAN", "A VLAN only", "A peer-to-peer cable", "A LAN"], "answer": 0, "explain": "Connecting sites over distance via a provider is a WAN."}]}, {"id": "m2", "title": "IP Addresses", "short": "IPv4, private/public, gateway", "desc": "How devices are addressed, which addresses are private, and what the default gateway does.", "content": "<div class=\"content-section\"><h3>What an IP address is</h3><p>An <strong>IP address</strong> identifies a device on a network so data can be delivered to it — like a mailing address. <strong>IPv4</strong> uses four numbers 0–255 separated by dots, e.g. <span class=\"tag\">192.168.1.25</span>. That's 32 bits, about 4.3 billion possible addresses — not enough for every device on Earth.</p></div><div class=\"content-section\"><h3>Private vs public</h3><p><strong>Private</strong> addresses are reused inside millions of LANs and are not routed on the public internet:</p><ul><li><span class=\"tag\">10.0.0.0/8</span></li><li><span class=\"tag\">172.16.0.0/12</span> (172.16–172.31)</li><li><span class=\"tag\">192.168.0.0/16</span></li></ul><p><strong>Public</strong> addresses are globally unique and reachable on the internet; your ISP assigns them.</p><div class=\"callout\">Try it: run <code>ipconfig</code> on Windows. Your IPv4 is probably 192.168.x.x (private). Then search “what is my IP” — that public number is different, because your router translates (NAT, module 7).</div></div><div class=\"content-section\"><h3>Subnet mask and the default gateway</h3><p>The <strong>subnet mask</strong> (e.g. <span class=\"tag\">255.255.255.0</span> or /24) tells a device which addresses are local. If the destination is local, it sends directly. If not, it hands the packet to the <strong>default gateway</strong> — normally your router, e.g. <span class=\"tag\">192.168.1.1</span>.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">PC</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">192.168.1.25</text><line x1=\"110\" y1=\"48\" x2=\"220\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"220\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"270.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Gateway</text><text x=\"270.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">192.168.1.1</text><line x1=\"320\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">public IPs</text></svg></div></div><div class=\"content-section\"><h3>How devices get an address</h3><p>Usually via <strong>DHCP</strong>: the router hands out an IP, mask, gateway and DNS server automatically. A <strong>169.254.x.x</strong> address means DHCP failed and Windows assigned itself a link-local address — a classic troubleshooting clue.</p><p><strong>IPv6</strong> (e.g. 2001:db8::1) is 128-bit and solves the shortage, but IPv4 is still everywhere.</p></div><div class=\"takeaway\"><strong>Key takeaway</strong>IPv4 = 32-bit dotted address. Private ranges (10/8, 172.16/12, 192.168/16) live inside LANs; public IPs are unique on the internet. Off-network traffic goes to the default gateway. 169.254.x.x = DHCP problem.</div>", "questions": [{"q": "Which address is private?", "options": ["172.20.4.9", "203.0.113.5", "172.40.1.1", "8.8.8.8"], "answer": 0, "explain": "172.16.0.0–172.31.255.255 is private; 172.20 is inside it, 172.40 is not."}, {"q": "A PC sends traffic to a website on the internet. Where does it send the packet first?", "options": ["To the DNS server only", "To its default gateway", "Directly to the website", "To every device on the LAN"], "answer": 1, "explain": "Destinations outside the local subnet go to the default gateway (router)."}, {"q": "A laptop shows IP 169.254.33.10. What most likely happened?", "options": ["It could not get an address from DHCP", "It is using IPv6", "It has a public IP", "It is on CGNAT"], "answer": 0, "explain": "169.254.x.x is APIPA/link-local — DHCP did not answer."}, {"q": "How many bits is an IPv4 address?", "options": ["16", "64", "32", "128"], "answer": 2, "explain": "IPv4 is 32 bits (~4.3 billion addresses). IPv6 is 128 bits."}, {"q": "What does DHCP do?", "options": ["Translates names to IPs", "Blocks attacks", "Encrypts web traffic", "Automatically assigns IP settings to devices"], "answer": 3, "explain": "DHCP hands out IP, mask, gateway and DNS settings."}, {"q": "Why does “what is my IP” show a different address than ipconfig?", "options": ["Your PC has two network cards", "Your PC has a private IP and the router presents a public one", "DNS changed it", "The website is wrong"], "answer": 1, "explain": "Your router uses NAT to share its public IP for your private devices."}]}, {"id": "m3", "title": "Packets, Ports & Why Ports Matter", "short": "Packets, port numbers", "desc": "Data travels in packets; ports make sure it reaches the right app.", "content": "<div class=\"content-section\"><h3>Data travels in packets</h3><p>Large data (a video, a file) is chopped into small <strong>packets</strong>. Each packet carries a <strong>header</strong> (source IP, destination IP, ports, etc.) and a <strong>payload</strong> (the actual data). Packets can take different paths and are reassembled at the destination.</p><div class=\"callout\">Analogy: shipping a bookcase in numbered boxes. Each box has the address on it; the receiver reassembles them in order.</div></div><div class=\"content-section\"><h3>Ports: which app gets the data</h3><p>An IP address gets data to the right <em>device</em>. A <strong>port number</strong> (0–65535) gets it to the right <em>application</em> on that device. IP + port is called a <strong>socket</strong>, e.g. <span class=\"tag\">142.250.80.46:443</span>.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Packet</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">dst :443</text><line x1=\"110\" y1=\"48\" x2=\"220\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"220\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"270.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Server</text><text x=\"270.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">one IP</text><line x1=\"320\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Web app</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">port 443</text></svg></div></div><div class=\"content-section\"><h3>Ports worth memorizing</h3><ul><li><span class=\"tag\">22</span> SSH (secure remote shell)</li><li><span class=\"tag\">25</span> SMTP (sending email)</li><li><span class=\"tag\">53</span> DNS</li><li><span class=\"tag\">80</span> HTTP</li><li><span class=\"tag\">443</span> HTTPS</li><li><span class=\"tag\">3389</span> RDP (Windows Remote Desktop)</li></ul><p>Well-known ports are 0–1023. Your client uses a random high <strong>ephemeral port</strong> (e.g. 51544) as its source port so replies come back to the right browser tab.</p></div><div class=\"content-section\"><h3>Why ports matter in real life</h3><p>Firewalls and port forwarding rules are written in terms of ports. “Can't connect to the server” is often “that port is blocked or nothing is listening on it.” On Windows, <code>netstat -an</code> shows listening ports; <code>Test-NetConnection host -Port 443</code> tests one.</p></div><div class=\"takeaway\"><strong>Key takeaway</strong>Packets = header + payload. IP finds the device, port finds the app. Know 22, 25, 53, 80, 443, 3389. Clients use random high source ports.</div>", "questions": [{"q": "What does a port number identify?", "options": ["A Wi‑Fi channel", "A network cable", "A specific application/service on a device", "A physical device"], "answer": 2, "explain": "IP → device; port → application on that device."}, {"q": "HTTPS normally uses which port?", "options": ["443", "53", "21", "80"], "answer": 0, "explain": "HTTPS = 443, HTTP = 80."}, {"q": "Which port is used for Windows Remote Desktop?", "options": ["3389", "8080", "25", "22"], "answer": 0, "explain": "RDP listens on TCP 3389 by default — a common attack target if exposed."}, {"q": "What is in a packet header?", "options": ["Only the payload", "Addressing info like source/destination IP and ports", "The website's HTML", "The user's password"], "answer": 1, "explain": "The header holds delivery info; the payload is the data."}, {"q": "Your browser connects to a web server. Its source port is likely…", "options": ["Port 0", "443", "A random high (ephemeral) port like 52011", "80"], "answer": 2, "explain": "Clients pick ephemeral source ports; the server side uses the well-known port."}, {"q": "A Windows command to test if port 443 is reachable on a host is…", "options": ["Test-NetConnection host -Port 443", "nslookup", "ping -t", "ipconfig /release"], "answer": 0, "explain": "Test-NetConnection with -Port tests a TCP connection to that port."}]}, {"id": "m4", "title": "TCP vs UDP", "short": "Reliable vs fast", "desc": "The two main ways apps send data, and when each makes sense.", "content": "<div class=\"content-section\"><h3>TCP: reliable delivery</h3><p><strong>TCP</strong> sets up a connection first with the <strong>three-way handshake</strong> (SYN → SYN-ACK → ACK). It numbers data, acknowledges what arrived, resends what was lost, and delivers in order. Used for web pages, email, file transfers, SSH.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Client</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">SYN →</text><line x1=\"110\" y1=\"48\" x2=\"150\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"150\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"200.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Server</text><text x=\"200.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">← SYN-ACK</text><line x1=\"250\" y1=\"48\" x2=\"290\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"290\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"340.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Client</text><text x=\"340.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">ACK →</text><line x1=\"390\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Connected</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">data flows</text></svg></div></div><div class=\"content-section\"><h3>UDP: fast and simple</h3><p><strong>UDP</strong> just sends datagrams — no handshake, no acknowledgements, no retransmission. Lower overhead and delay. Used where a late packet is useless anyway: voice/video calls, online gaming, live streams, and most DNS queries.</p><div class=\"callout\">Real-world feel: on a Teams call, a lost UDP packet is a tiny glitch. If TCP paused to resend it, the whole call would stutter.</div></div><div class=\"content-section\"><h3>Side by side</h3><ul><li><strong>Connection:</strong> TCP yes, UDP no</li><li><strong>Guaranteed &amp; ordered:</strong> TCP yes, UDP no</li><li><strong>Overhead:</strong> TCP higher, UDP lower</li><li><strong>Examples:</strong> TCP — HTTPS, SSH, SMTP; UDP — VoIP, gaming, DNS, DHCP</li></ul><p>Note: modern HTTP/3 runs over <strong>QUIC</strong>, which is built on UDP but adds its own reliability and encryption.</p></div><div class=\"takeaway\"><strong>Key takeaway</strong>TCP = handshake, acknowledgements, retransmits, ordered — reliability first. UDP = fire-and-forget — speed first. The app chooses based on whether late data is worth waiting for.</div>", "questions": [{"q": "What is the correct order of the TCP handshake?", "options": ["SYN, SYN-ACK, ACK", "HELLO, OK, GO", "ACK, SYN, SYN-ACK", "SYN, ACK, FIN"], "answer": 0, "explain": "SYN → SYN-ACK → ACK."}, {"q": "Which is best suited to UDP?", "options": ["Logging in over SSH", "A live voice call", "Sending email", "Downloading a PDF"], "answer": 1, "explain": "Real-time voice prefers speed; a resent late packet is useless."}, {"q": "What does TCP do when a segment is lost?", "options": ["Ignores it", "Retransmits it", "Switches to UDP", "Drops the connection immediately"], "answer": 1, "explain": "TCP detects missing data via acknowledgements and resends it."}, {"q": "Most ordinary DNS lookups use…", "options": ["UDP port 53", "UDP port 443", "TCP port 25", "TCP port 80"], "answer": 0, "explain": "DNS queries normally use UDP 53 (TCP 53 for large responses/zone transfers)."}, {"q": "HTTP/3 uses QUIC, which runs on top of…", "options": ["TCP", "ARP", "ICMP", "UDP"], "answer": 3, "explain": "QUIC is built on UDP and implements reliability itself."}, {"q": "A key downside of TCP compared to UDP is…", "options": ["More overhead and delay", "Only works on LANs", "Cannot use ports", "No reliability"], "answer": 0, "explain": "Handshakes, acks and retransmits add overhead."}]}, {"id": "m5", "title": "DNS — Names Become IPs", "short": "Name resolution", "desc": "How typing a website name turns into an IP address your computer can reach.", "content": "<div class=\"content-section\"><h3>Why DNS exists</h3><p>Computers route by IP address; humans remember names. <strong>DNS (Domain Name System)</strong> is the internet's phone book: it translates <span class=\"tag\">www.example.com</span> into an IP like <span class=\"tag\">93.184.215.14</span>.</p></div><div class=\"content-section\"><h3>What happens when you type a name</h3><ol><li>Your PC checks its local cache (and the hosts file).</li><li>It asks its configured <strong>DNS resolver</strong> (often your router or ISP, or a public one like 1.1.1.1 / 8.8.8.8).</li><li>If the resolver doesn't know, it asks a <strong>root</strong> server → the <strong>TLD</strong> server (.com) → the domain's <strong>authoritative</strong> server.</li><li>The answer comes back and is cached for its <strong>TTL</strong> (time to live).</li></ol><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">PC</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">cache</text><line x1=\"110\" y1=\"48\" x2=\"150\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"150\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"200.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Resolver</text><text x=\"200.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">1.1.1.1</text><line x1=\"250\" y1=\"48\" x2=\"290\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"290\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"340.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Root / .com</text><text x=\"340.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">referrals</text><line x1=\"390\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Authoritative</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">the answer</text></svg></div></div><div class=\"content-section\"><h3>Common record types</h3><ul><li><strong>A</strong> — name → IPv4</li><li><strong>AAAA</strong> — name → IPv6</li><li><strong>CNAME</strong> — alias to another name</li><li><strong>MX</strong> — mail server for a domain</li><li><strong>TXT</strong> — text, used for email security (SPF/DKIM) and verification</li></ul></div><div class=\"content-section\"><h3>Troubleshooting</h3><p>If <code>ping 8.8.8.8</code> works but websites by name don't, suspect DNS. Tools: <code>nslookup example.com</code>, <code>Resolve-DnsName</code>, and <code>ipconfig /flushdns</code> to clear a stale cache.</p><div class=\"callout\">“It's always DNS” is a running joke in IT for a reason — a wrong or stale record can make a working server look down.</div></div><div class=\"takeaway\"><strong>Key takeaway</strong>DNS maps names to IPs. Your resolver walks root → TLD → authoritative and caches answers per TTL. A = IPv4, AAAA = IPv6, MX = mail. IP works but names don't → check DNS.</div>", "questions": [{"q": "What does DNS primarily do?", "options": ["Encrypts traffic", "Blocks ports", "Assigns IP addresses", "Translates domain names into IP addresses"], "answer": 3, "explain": "DNS = name resolution. DHCP assigns addresses."}, {"q": "Which record maps a name to an IPv6 address?", "options": ["MX", "A", "AAAA", "CNAME"], "answer": 2, "explain": "AAAA = IPv6; A = IPv4."}, {"q": "You can ping 8.8.8.8 but can't open any website by name. Most likely cause?", "options": ["DNS problem", "TCP disabled", "Broken cable", "Monitor issue"], "answer": 0, "explain": "Raw IP connectivity works, so name resolution is the suspect."}, {"q": "What does TTL control for a DNS record?", "options": ["Who owns the domain", "The port used", "How long it may be cached", "Encryption strength"], "answer": 2, "explain": "TTL sets how long resolvers/clients cache the answer."}, {"q": "Which server holds the definitive records for a domain?", "options": ["Authoritative name server", "The DHCP server", "Root server", "Your router"], "answer": 0, "explain": "The authoritative server is the source of truth for that domain's records."}, {"q": "Which record tells the world where to deliver email for a domain?", "options": ["PTR", "MX", "TXT", "A"], "answer": 1, "explain": "MX = mail exchanger."}]}, {"id": "m6", "title": "OSI / TCP-IP Mental Model", "short": "Layers for troubleshooting", "desc": "A practical layered model for understanding and troubleshooting networks.", "content": "<div class=\"content-section\"><h3>Why layers?</h3><p>Networking is split into <strong>layers</strong>; each does one job and relies on the one below. This gives you a checklist: work from the bottom up when something breaks.</p></div><div class=\"content-section\"><h3>The 7 OSI layers (bottom to top)</h3><ol><li><strong>Physical</strong> — cables, radio, signals</li><li><strong>Data Link</strong> — MAC addresses, switches, Ethernet/Wi‑Fi frames</li><li><strong>Network</strong> — IP addresses, routers</li><li><strong>Transport</strong> — TCP/UDP, ports</li><li><strong>Session</strong> — managing conversations</li><li><strong>Presentation</strong> — formats, encryption (e.g. TLS is often placed here)</li><li><strong>Application</strong> — HTTP, DNS, SMTP</li></ol><div class=\"callout\">Memory aid (bottom up): <em>Please Do Not Throw Sausage Pizza Away</em>.</div></div><div class=\"content-section\"><h3>The TCP/IP model (what the internet actually uses)</h3><p>Four layers: <strong>Link</strong> (OSI 1–2), <strong>Internet</strong> (3), <strong>Transport</strong> (4), <strong>Application</strong> (5–7). Engineers still say “Layer 2 problem” or “Layer 7 load balancer” using OSI numbers.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Application</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">HTTP, DNS</text><line x1=\"110\" y1=\"48\" x2=\"150\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"150\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"200.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Transport</text><text x=\"200.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">TCP/UDP</text><line x1=\"250\" y1=\"48\" x2=\"290\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"290\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"340.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text><text x=\"340.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">IP</text><line x1=\"390\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Link</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">Ethernet/Wi‑Fi</text></svg></div></div><div class=\"content-section\"><h3>Using it to troubleshoot</h3><ul><li>L1: Is the cable plugged in / Wi‑Fi connected?</li><li>L2: Is the link light on, right VLAN?</li><li>L3: Do I have a valid IP? Can I ping the gateway?</li><li>L4: Is the port open / blocked by firewall?</li><li>L7: Is the app or DNS name working?</li></ul></div><div class=\"takeaway\"><strong>Key takeaway</strong>OSI has 7 layers, TCP/IP has 4. Physical → Data Link (MAC) → Network (IP) → Transport (ports) → … → Application. Troubleshoot bottom up.</div>", "questions": [{"q": "IP addresses and routers operate at which OSI layer?", "options": ["Layer 1", "Layer 2", "Layer 3", "Layer 7"], "answer": 2, "explain": "Layer 3 = Network."}, {"q": "TCP and UDP live at which layer?", "options": ["Transport", "Physical", "Application", "Data Link"], "answer": 0, "explain": "Layer 4 = Transport, where ports live."}, {"q": "A switch forwarding frames by MAC address works mainly at…", "options": ["Layer 2", "Layer 7", "Layer 4", "Layer 3"], "answer": 0, "explain": "Switches are classic Layer 2 (Data Link) devices."}, {"q": "A user's network cable is unplugged. That's a problem at…", "options": ["Layer 1", "Layer 3", "Layer 5", "Layer 7"], "answer": 0, "explain": "Physical layer — start here."}, {"q": "How many layers does the TCP/IP model have?", "options": ["4", "7", "3", "5"], "answer": 0, "explain": "Link, Internet, Transport, Application."}, {"q": "HTTP and DNS are examples of which layer?", "options": ["Network", "Application", "Transport", "Data Link"], "answer": 1, "explain": "They're application-layer protocols."}]}, {"id": "m7", "title": "Switches, Routers, NAT & CGNAT", "short": "Devices, NAT, CGNAT", "desc": "Which box does what, how NAT shares one public IP, and how ISP CGNAT changes the picture.", "content": "<div class=\"content-section\"><h3>Switch vs router</h3><p>A <strong>switch</strong> connects devices <em>within</em> one LAN. It learns which MAC address is on which port and forwards frames only where they need to go (Layer 2).</p><p>A <strong>router</strong> connects <em>different</em> networks and forwards packets by IP address (Layer 3) — e.g. your LAN to the ISP. A home “Wi‑Fi router” is really a router + switch + Wi‑Fi access point + firewall in one box.</p></div><div class=\"content-section\"><h3>NAT at home</h3><p>Your house has many private IPs but usually one public IPv4. <strong>NAT (Network Address Translation)</strong> — specifically PAT/port translation — rewrites outbound packets so they appear to come from the router's public IP, tracking each conversation by port so replies return to the right device.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Laptop</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">192.168.1.20:51000</text><line x1=\"110\" y1=\"48\" x2=\"220\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"220\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"270.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Router NAT</text><text x=\"270.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">rewrites</text><line x1=\"320\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet sees</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">203.0.113.7:40001</text></svg></div><div class=\"callout\">Side effect: unsolicited inbound traffic has no matching NAT entry, so it's dropped — unless you create a <strong>port forward</strong> (e.g. public :25565 → 192.168.1.50:25565 for a Minecraft server).</div></div><div class=\"content-section\"><h3>CGNAT: when the ISP does NAT too</h3><p>IPv4 is scarce, so many ISPs (mobile carriers, Starlink, some fiber/cable/fixed wireless) use <strong>Carrier-Grade NAT</strong>. Your router no longer gets a public IP — it gets an address from the ISP's shared range <span class=\"tag\">100.64.0.0/10</span> (100.64.0.0–100.127.255.255). The ISP then NATs many customers onto a pool of public IPs.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">PC</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">192.168.1.20</text><line x1=\"110\" y1=\"48\" x2=\"150\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"150\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"200.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Home NAT</text><text x=\"200.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">WAN 100.72.x.x</text><line x1=\"250\" y1=\"48\" x2=\"290\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"290\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"340.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">ISP CGNAT</text><text x=\"340.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">shared</text><line x1=\"390\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">public IP</text></svg></div><p>Traffic is now translated twice — <strong>double NAT</strong>.</p></div><div class=\"content-section\"><h3>Why port forwarding fails on CGNAT</h3><ul><li>Your port forward only opens <em>your</em> router's NAT layer.</li><li>Inbound traffic hits the ISP's public IP first, and the ISP's CGNAT has no rule sending it to you — you don't control that device.</li><li>That public IP is also shared with other customers, so “your IP” isn't really yours.</li></ul><p><strong>How to tell:</strong> your router's WAN IP is in 100.64.0.0/10, or it doesn't match what “what is my IP” shows.</p><p><strong>Workarounds:</strong> ask the ISP for a public/static IPv4 (often paid), use IPv6 if offered, or use an outbound tunnel/relay service (VPN with port forwarding, Tailscale, Cloudflare Tunnel).</p></div><div class=\"takeaway\"><strong>Key takeaway</strong>Switches connect devices in a LAN (MAC, L2); routers connect networks (IP, L3). Home NAT shares one public IP. CGNAT = ISP-level NAT in 100.64.0.0/10 → double NAT, shared public IPs, and inbound port forwards that can't work without a public IP, IPv6, or a tunnel.</div>", "questions": [{"q": "Which device forwards traffic between different networks using IP addresses?", "options": ["Router", "Hub", "Patch panel", "Switch"], "answer": 0, "explain": "Routers work at Layer 3 between networks."}, {"q": "What does home NAT mainly do?", "options": ["Lets many private devices share one public IP", "Encrypts Wi‑Fi", "Assigns domain names", "Speeds up downloads"], "answer": 0, "explain": "NAT translates private source addresses/ports to the router's public IP."}, {"q": "Your router's WAN IP is 100.81.12.4. What does that strongly suggest?", "options": ["You have a static public IP", "Your router is broken", "You are behind ISP CGNAT", "You are on IPv6 only"], "answer": 2, "explain": "100.64.0.0/10 is shared address space for carrier-grade NAT."}, {"q": "Which range is reserved for CGNAT shared address space?", "options": ["169.254.0.0/16", "10.0.0.0/8", "192.0.2.0/24", "100.64.0.0/10"], "answer": 3, "explain": "RFC 6598 reserves 100.64.0.0/10 for CGNAT."}, {"q": "You set up a correct port forward, but friends still can't reach your game server. You're on CGNAT. Why?", "options": ["Your switch is Layer 2", "The ISP's NAT drops unsolicited inbound traffic and you can't configure it", "UDP is blocked by all routers", "Port forwards need a reboot every hour"], "answer": 1, "explain": "Your forward only opens your layer; the ISP's CGNAT layer has no mapping to you."}, {"q": "Traffic translated by your router and again by the ISP is called…", "options": ["VLAN tagging", "Double NAT", "Split tunneling", "Port mirroring"], "answer": 1, "explain": "Two NAT layers = double NAT."}, {"q": "Which is a realistic fix for hosting behind CGNAT?", "options": ["Use a longer Ethernet cable", "Request a public IPv4, use IPv6, or use an outbound tunnel/relay", "Change the Wi‑Fi password", "Disable DHCP"], "answer": 1, "explain": "You need a reachable address or a tunnel that connects outbound."}]}, {"id": "m8", "title": "HTTP / HTTPS Basics", "short": "The web's protocol", "desc": "How browsers talk to web servers, and what the S in HTTPS actually protects.", "content": "<div class=\"content-section\"><h3>Request and response</h3><p><strong>HTTP</strong> is how browsers and servers talk. The client sends a <strong>request</strong> with a <strong>method</strong> and path; the server sends a <strong>response</strong> with a <strong>status code</strong> and content.</p><ul><li><strong>GET</strong> — fetch something</li><li><strong>POST</strong> — submit data (forms, logins)</li><li><strong>PUT/PATCH/DELETE</strong> — update or remove (common in APIs)</li></ul><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Browser</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">GET /index</text><line x1=\"110\" y1=\"48\" x2=\"220\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"220\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"270.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Server</text><text x=\"270.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">processes</text><line x1=\"320\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Response</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">200 OK + HTML</text></svg></div></div><div class=\"content-section\"><h3>Status codes you'll see</h3><ul><li><span class=\"tag\">200</span> OK</li><li><span class=\"tag\">301/302</span> redirect</li><li><span class=\"tag\">401</span> not authenticated / <span class=\"tag\">403</span> forbidden</li><li><span class=\"tag\">404</span> not found</li><li><span class=\"tag\">500</span> server error / <span class=\"tag\">502/503</span> bad gateway / unavailable</li></ul><div class=\"callout\">Rule of thumb: 4xx = the request/client side, 5xx = the server side.</div></div><div class=\"content-section\"><h3>HTTPS = HTTP + TLS</h3><p><strong>HTTPS</strong> wraps HTTP in <strong>TLS</strong> encryption (port 443). It gives:</p><ul><li><strong>Confidentiality</strong> — eavesdroppers on café Wi‑Fi can't read the content.</li><li><strong>Integrity</strong> — data can't be silently altered.</li><li><strong>Authentication</strong> — the server's <strong>certificate</strong>, signed by a trusted Certificate Authority, proves you reached the real domain.</li></ul><p>The padlock does <em>not</em> mean a site is trustworthy — phishing sites can have valid certificates too. It means the connection is encrypted to whoever owns that domain.</p></div><div class=\"takeaway\"><strong>Key takeaway</strong>HTTP = methods + status codes over port 80. HTTPS = HTTP inside TLS on 443: encryption, integrity, and certificate-based identity. 4xx client side, 5xx server side. Padlock ≠ safe site.</div>", "questions": [{"q": "Which HTTP method is typically used to submit a login form?", "options": ["TRACE", "POST", "HEAD", "GET"], "answer": 1, "explain": "POST sends data in the request body."}, {"q": "A 404 status code means…", "options": ["Redirect", "Server crashed", "Access granted", "Resource not found"], "answer": 3, "explain": "404 = Not Found."}, {"q": "A 503 error points to a problem mainly on…", "options": ["The server/service side", "The user's keyboard", "The Wi‑Fi password", "DNS records only"], "answer": 0, "explain": "5xx codes indicate server-side problems; 503 = service unavailable."}, {"q": "What provides the encryption in HTTPS?", "options": ["DHCP", "DNS", "NAT", "TLS"], "answer": 3, "explain": "HTTPS is HTTP over TLS."}, {"q": "What does a valid HTTPS padlock guarantee?", "options": ["The server is in your country", "The connection is encrypted to the owner of that domain", "The site has no malware", "The site is not a scam"], "answer": 1, "explain": "It proves encryption and domain identity, not trustworthiness."}, {"q": "What proves a server's identity in HTTPS?", "options": ["A certificate signed by a trusted CA", "Its port number", "Its IP address", "Its MAC address"], "answer": 0, "explain": "The browser validates the certificate chain to a trusted CA."}]}, {"id": "m9", "title": "Firewalls & Basic Security", "short": "Rules, exposure, hygiene", "desc": "How firewalls decide what's allowed, and the habits that keep networks safe.", "content": "<div class=\"content-section\"><h3>What a firewall does</h3><p>A <strong>firewall</strong> inspects traffic and allows or blocks it based on <strong>rules</strong> — usually source/destination IP, port and protocol. Good design is <strong>default deny</strong>: block everything, then allow only what's needed.</p><p>A <strong>stateful</strong> firewall remembers outbound connections, so replies are allowed back in automatically while unsolicited inbound traffic is dropped.</p><div class=\"diagram\"><svg viewBox=\"0 0 540 96\" xmlns=\"http://www.w3.org/2000/svg\" width=\"540\" height=\"96\" style=\"max-width:100%;height:auto\"><rect x=\"10\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"60.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Internet</text><text x=\"60.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">inbound</text><line x1=\"110\" y1=\"48\" x2=\"220\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"220\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"270.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">Firewall</text><text x=\"270.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">rules check</text><line x1=\"320\" y1=\"48\" x2=\"430\" y2=\"48\" stroke=\"#3b9eff\" stroke-width=\"2\"/><rect x=\"430\" y=\"20\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#1e2a3a\" stroke=\"#3b9eff\" stroke-width=\"1.5\"/><text x=\"480.0\" y=\"45\" text-anchor=\"middle\" fill=\"#e8eef6\" font-size=\"12\" font-family=\"system-ui\">LAN</text><text x=\"480.0\" y=\"63\" text-anchor=\"middle\" fill=\"#8b9cb3\" font-size=\"10\" font-family=\"system-ui\">allowed only</text></svg></div></div><div class=\"content-section\"><h3>Where firewalls live</h3><ul><li><strong>Network firewall</strong> — at the edge (your router, or a dedicated appliance at work).</li><li><strong>Host firewall</strong> — on each device (Windows Defender Firewall).</li></ul><p>Use both — layered security is called <strong>defense in depth</strong>.</p><div class=\"callout\">Example rule: Allow TCP 443 inbound to the web server 10.0.5.10; deny everything else inbound.</div></div><div class=\"content-section\"><h3>Exposure is the big risk</h3><p>Every open port or port forward is a door. Exposing <strong>RDP (3389)</strong> or <strong>SMB (445)</strong> directly to the internet is a common way ransomware gets in. Prefer a VPN for remote access.</p></div><div class=\"content-section\"><h3>Everyday security habits</h3><ul><li>Least privilege — only the access each person/device needs.</li><li>Patch routers, OSes and apps.</li><li>Change default admin passwords; use MFA.</li><li>Use WPA2/WPA3 on Wi‑Fi; segment guests and IoT devices on separate networks/VLANs.</li><li>Be skeptical of phishing — most breaches start with a person, not a port.</li></ul></div><div class=\"takeaway\"><strong>Key takeaway</strong>Firewalls enforce allow/deny rules on IP, port and protocol — default deny, stateful. Combine network + host firewalls. Minimize exposed ports (never raw RDP/SMB to the internet), patch, use MFA, and segment untrusted devices.</div>", "questions": [{"q": "What is a “default deny” firewall policy?", "options": ["Deny the administrator", "Allow everything, block known bad", "Block everything unless a rule explicitly allows it", "Block only UDP"], "answer": 2, "explain": "Default deny allows only what's explicitly needed."}, {"q": "A stateful firewall allows reply traffic because it…", "options": ["Tracks connections initiated from inside", "Uses DNS", "Has no rules", "Ignores ports"], "answer": 0, "explain": "It remembers outbound sessions and permits matching replies."}, {"q": "Which is the riskiest to expose directly to the internet?", "options": ["An internal printer on the LAN", "RDP on port 3389", "DNS lookups from your PC", "Outbound HTTPS"], "answer": 1, "explain": "Exposed RDP is heavily scanned and attacked."}, {"q": "Using both a router firewall and Windows Defender Firewall is an example of…", "options": ["Defense in depth", "Load balancing", "Port forwarding", "Double NAT"], "answer": 0, "explain": "Layered controls = defense in depth."}, {"q": "Putting smart-home devices on a separate guest network/VLAN is called…", "options": ["Segmentation", "Caching", "Routing", "Tunneling"], "answer": 0, "explain": "Segmentation limits what a compromised device can reach."}, {"q": "Safer way to give staff remote access to internal PCs?", "options": ["Port forward 3389 to each PC", "Disable the firewall", "Share the admin password", "Use a VPN (with MFA)"], "answer": 3, "explain": "A VPN with MFA avoids exposing RDP directly."}]}, {"id": "m10", "title": "Capstone Scenario Quiz", "short": "Put it all together", "desc": "Real-world scenarios that combine everything from modules 1–9.", "content": "<div class=\"content-section\"><h3>How this works</h3><p>Each question is a situation you could actually meet at home or at work. Think through the layers: physical → IP → ports/transport → DNS/app → NAT/firewall. Pass at 70% to finish the guide.</p></div><div class=\"content-section\"><h3>Quick review</h3><ul><li>169.254.x.x → DHCP failed</li><li>Ping IP works, names fail → DNS</li><li>WAN IP in 100.64.0.0/10 → CGNAT, inbound forwards won't work</li><li>4xx client side, 5xx server side</li><li>Exposed 3389/445 → big risk; use VPN</li></ul></div><div class=\"takeaway\"><strong>Key takeaway</strong>Troubleshoot in layers and use the clues: the address you have, what responds, which port, and where NAT or a firewall sits in the path.</div>", "questions": [{"q": "A coworker's PC shows IP 169.254.10.4 and no internet. First thing to check?", "options": ["HTTP status codes", "DNS records", "The website's certificate", "Whether the PC is connected and DHCP is reachable (cable/Wi‑Fi, DHCP server)"], "answer": 3, "explain": "A link-local address means DHCP didn't answer — check physical connection and DHCP."}, {"q": "You can reach 1.1.1.1 by IP, but “www.company.com” won't load anywhere on the office network. Most likely?", "options": ["Broken Ethernet cables", "CGNAT", "DNS resolver or record problem", "TCP disabled"], "answer": 2, "explain": "IP connectivity works; name resolution is failing."}, {"q": "You host a game server at home, port forward is correct, Windows firewall allows it, but nobody outside can connect. Router WAN IP is 100.66.20.9. Why?", "options": ["Wrong subnet mask", "You're behind ISP CGNAT, so inbound connections never reach your router", "UDP is unsupported", "DNS TTL too long"], "answer": 1, "explain": "100.64.0.0/10 WAN = CGNAT; the ISP's NAT drops unsolicited inbound."}, {"q": "Best fix for that game server?", "options": ["Get a public IPv4 from the ISP, use IPv6, or use a tunnel/relay service", "Change ports to 80", "Reboot the switch", "Use a longer cable"], "answer": 0, "explain": "You need reachability that doesn't depend on the ISP's NAT."}, {"q": "A video call is choppy but file downloads finish fine. Which transport is the call most likely using, and why is it sensitive?", "options": ["ICMP — pings interfere", "DNS — lookups fail", "UDP — lost/late packets aren't resent, so loss/jitter shows as glitches", "TCP — retransmits slow it"], "answer": 2, "explain": "Real-time media uses UDP; loss and jitter show directly."}, {"q": "A website returns 502 Bad Gateway to everyone. Where is the problem?", "options": ["User's DNS cache", "Each user's browser", "User's Wi‑Fi", "Server side — a proxy/load balancer can't get a good response from the backend"], "answer": 3, "explain": "5xx = server side; 502 is an upstream/gateway failure."}, {"q": "A manager wants to open RDP 3389 on the firewall so he can work from home. Best recommendation?", "options": ["Use a VPN with MFA instead of exposing RDP", "Change it to port 80", "Disable the host firewall", "Open it to the whole internet"], "answer": 0, "explain": "Exposed RDP is a top ransomware entry point."}, {"q": "Two laptops on the same switch and VLAN can talk, but neither can reach the internet. The issue is most likely at…", "options": ["HTTP methods", "The switch's MAC learning", "The router/default gateway or the ISP link", "Each laptop's monitor"], "answer": 2, "explain": "Local (L2) works; off-network traffic goes via the gateway — check router/WAN."}, {"q": "You visit your bank over HTTPS on café Wi‑Fi. What does TLS protect against?", "options": ["Other café users reading or altering your traffic", "All malware on your PC", "The bank's server going down", "Phishing sites existing"], "answer": 0, "explain": "TLS encrypts and protects integrity in transit."}]}];
+
+function defaultState() {
+  return { unlocked: 0, completed: {}, current: null };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) { return defaultState(); }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+let state = loadState();
+
+function $(sel) { return document.querySelector(sel); }
+function completedCount() {
+  return MODULES.filter(m => state.completed[m.id] && state.completed[m.id].passed).length;
+}
+function updateProgressUI() {
+  const done = completedCount();
+  const total = MODULES.length;
+  const pct = Math.round((done / total) * 100);
+  $('#progCurrent').textContent = done;
+  $('#progTotal').textContent = total;
+  $('#progPct').textContent = pct;
+  $('#progBar').style.width = pct + '%';
+}
+function closeMobile() {
+  $('#sidebar').classList.remove('open');
+  $('#sidebarOverlay').classList.remove('open');
+}
+function renderNav() {
+  const nav = $('#moduleNav');
+  nav.innerHTML = '';
+  const welcomeLi = document.createElement('li');
+  welcomeLi.className = 'module-nav-item' + (state.current === null ? ' active' : '');
+  welcomeLi.innerHTML = '<span class="nav-icon">⌂</span><span>Welcome</span>';
+  welcomeLi.addEventListener('click', () => { state.current = null; saveState(state); render(); closeMobile(); });
+  nav.appendChild(welcomeLi);
+  MODULES.forEach((mod, i) => {
+    const isLocked = i > state.unlocked;
+    const isDone = !!(state.completed[mod.id] && state.completed[mod.id].passed);
+    const isActive = state.current === i;
+    const li = document.createElement('li');
+    li.className = 'module-nav-item' + (isLocked ? ' locked' : '') + (isDone ? ' completed' : '') + (isActive ? ' active' : '');
+    let icon = String(i + 1);
+    if (isDone) icon = '✓';
+    if (isLocked) icon = '🔒';
+    li.innerHTML = '<span class="nav-icon">' + icon + '</span><span>' + mod.short + '</span>';
+    if (!isLocked) {
+      li.addEventListener('click', () => { state.current = i; saveState(state); render(); closeMobile(); });
+    }
+    nav.appendChild(li);
+  });
+}
+function renderWelcome() {
+  const done = completedCount();
+  let cta = '';
+  if (done === MODULES.length) {
+    cta = '<button class="btn btn-success" id="startBtn">Review modules</button>';
+  } else {
+    cta = '<button class="btn btn-primary" id="startBtn">' + (done === 0 && state.unlocked === 0 ? 'Start Module 1' : 'Continue learning') + '</button>';
+  }
+  $('#mainContent').innerHTML =
+    '<div class="welcome">' +
+    '<h2>Networking Fundamentals v2</h2>' +
+    '<p>An interactive, progressive study guide. Complete each module’s quiz (70%+) to unlock the next. Your progress is saved in this browser.</p>' +
+    '<p style="margin-bottom:1.5rem;color:var(--text-muted);font-size:0.9rem;">' + done + ' of ' + MODULES.length + ' modules completed · ' + Math.round(done / MODULES.length * 100) + '%</p>' +
+    cta +
+    '<div style="margin-top:2.5rem;text-align:left;max-width:480px;margin-left:auto;margin-right:auto;">' +
+    '<h3 style="font-size:1rem;margin-bottom:0.75rem;color:var(--text-muted);">Curriculum</h3>' +
+    '<ol style="color:var(--text-muted);font-size:0.9rem;padding-left:1.2rem;">' +
+    MODULES.map((m, i) => {
+      const mark = (state.completed[m.id] && state.completed[m.id].passed) ? ' ✓' : (i > state.unlocked ? ' 🔒' : '');
+      return '<li style="margin-bottom:0.35rem;">' + m.title + mark + '</li>';
+    }).join('') +
+    '</ol></div></div>';
+  const btn = $('#startBtn');
+  if (btn) btn.addEventListener('click', () => {
+    state.current = (done === MODULES.length) ? 0 : Math.min(state.unlocked, MODULES.length - 1);
+    saveState(state); render();
+  });
+}
+function renderModule(idx) {
+  const mod = MODULES[idx];
+  const prevCompleted = state.completed[mod.id];
+  $('#mainContent').innerHTML =
+    '<div class="module-header">' +
+    '<span class="module-badge">Module ' + (idx + 1) + ' of ' + MODULES.length + '</span>' +
+    '<h2>' + mod.title + '</h2>' +
+    '<p class="desc">' + mod.desc + '</p></div>' +
+    mod.content +
+    '<div class="quiz-section" id="quizSection">' +
+    '<h3>Check your understanding</h3>' +
+    '<p class="quiz-meta">Answer all questions, then submit. You need ' + Math.ceil(PASS_THRESHOLD * 100) + '% to unlock the next module.</p>' +
+    '<div id="questions"></div>' +
+    '<div class="quiz-actions">' +
+    '<button class="btn btn-primary" id="submitQuiz">Submit quiz</button>' +
+    '<button class="btn btn-secondary hidden" id="retryQuiz">Retry quiz</button>' +
+    '</div><div class="score-panel" id="scorePanel"></div></div>' +
+    '<div class="nav-buttons">' +
+    '<button class="btn btn-secondary" id="prevBtn">' + (idx === 0 ? '← Welcome' : '← Previous') + '</button>' +
+    '<button class="btn btn-primary" id="nextBtn" ' + ((idx >= state.unlocked || idx === MODULES.length - 1) ? 'disabled' : '') + '>' +
+    (idx === MODULES.length - 1 ? 'Finish' : 'Next module →') + '</button></div>';
+
+  const qContainer = $('#questions');
+  mod.questions.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.dataset.qi = qi;
+    div.innerHTML =
+      '<div class="question-text">' + (qi + 1) + '. ' + q.q + '</div><div class="options">' +
+      q.options.map((opt, oi) =>
+        '<label class="option"><input type="radio" name="q' + qi + '" value="' + oi + '"><span>' + opt + '</span></label>'
+      ).join('') +
+      '</div><div class="explanation" id="exp' + qi + '"></div>';
+    qContainer.appendChild(div);
+  });
+  qContainer.querySelectorAll('.option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.classList.contains('disabled')) return;
+      const name = opt.querySelector('input').name;
+      qContainer.querySelectorAll('input[name="' + name + '"]').forEach(inp => {
+        inp.closest('.option').classList.remove('selected');
+      });
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+    });
+  });
+  $('#submitQuiz').addEventListener('click', () => gradeQuiz(idx));
+  $('#retryQuiz').addEventListener('click', () => {
+    saveState(state);
+    renderModule(idx);
+    updateProgressUI();
+    renderNav();
+    window.scrollTo({ top: $('#quizSection').offsetTop - 20, behavior: 'smooth' });
+  });
+  $('#prevBtn').addEventListener('click', () => {
+    state.current = idx === 0 ? null : idx - 1;
+    saveState(state); render();
+  });
+  $('#nextBtn').addEventListener('click', () => {
+    if (idx < MODULES.length - 1 && idx < state.unlocked) {
+      state.current = idx + 1; saveState(state); render();
+    } else if (idx === MODULES.length - 1 && state.completed[mod.id] && state.completed[mod.id].passed) {
+      state.current = null; saveState(state); render();
+    }
+  });
+  if (prevCompleted && prevCompleted.passed) {
+    showScore(idx, prevCompleted.score, prevCompleted.total, true, true);
+  }
+  const nextBtn = $('#nextBtn');
+  if (idx < MODULES.length - 1 && state.unlocked > idx) nextBtn.disabled = false;
+  if (idx === MODULES.length - 1 && state.completed[mod.id] && state.completed[mod.id].passed) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Back to welcome →';
+  }
+}
+function gradeQuiz(idx) {
+  const mod = MODULES[idx];
+  let correct = 0;
+  const total = mod.questions.length;
+  let allAnswered = true;
+  mod.questions.forEach((q, qi) => {
+    if (!document.querySelector('input[name="q' + qi + '"]:checked')) allAnswered = false;
+  });
+  if (!allAnswered) { alert('Please answer all questions before submitting.'); return; }
+  mod.questions.forEach((q, qi) => {
+    const selected = document.querySelector('input[name="q' + qi + '"]:checked');
+    const chosen = parseInt(selected.value, 10);
+    const qEl = document.querySelector('.question[data-qi="' + qi + '"]');
+    const exp = $('#exp' + qi);
+    qEl.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
+    qEl.querySelectorAll('input').forEach(i => { i.disabled = true; });
+    qEl.querySelectorAll('.option').forEach((o, oi) => {
+      if (oi === q.answer) o.classList.add('correct');
+      if (oi === chosen && chosen !== q.answer) o.classList.add('incorrect');
+    });
+    if (chosen === q.answer) {
+      correct++;
+      qEl.classList.add('answered-correct');
+      exp.className = 'explanation show correct-exp';
+      exp.textContent = '✓ Correct. ' + q.explain;
+    } else {
+      qEl.classList.add('answered-wrong');
+      exp.className = 'explanation show wrong-exp';
+      exp.textContent = '✗ Not quite. ' + q.explain;
+    }
+  });
+  const ratio = correct / total;
+  const passed = ratio >= PASS_THRESHOLD;
+  state.completed[mod.id] = { score: correct, total: total, passed: passed };
+  if (passed && idx + 1 < MODULES.length && state.unlocked < idx + 1) {
+    state.unlocked = idx + 1;
+  }
+  saveState(state);
+  showScore(idx, correct, total, passed, false);
+  updateProgressUI();
+  renderNav();
+  const nextBtn = $('#nextBtn');
+  if (passed && idx < MODULES.length - 1) nextBtn.disabled = false;
+  if (passed && idx === MODULES.length - 1) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Back to welcome →';
+  }
+}
+function showScore(idx, score, total, passed, fromCache) {
+  const panel = $('#scorePanel');
+  const pct = Math.round((score / total) * 100);
+  panel.className = 'score-panel show ' + (passed ? 'pass' : 'fail');
+  let msg;
+  if (passed) {
+    msg = idx < MODULES.length - 1 ? 'Next module unlocked. Great work!' : '🎉 You completed the Networking Fundamentals v2 guide!';
+  } else {
+    msg = 'You need at least ' + Math.ceil(PASS_THRESHOLD * 100) + '% to unlock the next module. Review the explanations and retry.';
+  }
+  panel.innerHTML =
+    '<div class="score-num">' + score + '/' + total + '</div>' +
+    '<p style="font-weight:600;margin-bottom:0.5rem;">' + pct + '% — ' + (passed ? 'Passed!' : 'Not yet — keep going') + '</p>' +
+    '<p style="font-size:0.9rem;color:var(--text-muted);">' + msg + '</p>';
+  $('#submitQuiz').classList.add('hidden');
+  $('#retryQuiz').classList.remove('hidden');
+  if (!fromCache) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function render() {
+  updateProgressUI();
+  renderNav();
+  if (state.current === null) renderWelcome();
+  else renderModule(state.current);
+  window.scrollTo({ top: 0 });
+}
+$('#hamburger').addEventListener('click', () => {
+  $('#sidebar').classList.toggle('open');
+  $('#sidebarOverlay').classList.toggle('open');
+});
+$('#sidebarOverlay').addEventListener('click', closeMobile);
+$('#resetBtn').addEventListener('click', () => $('#resetModal').classList.add('open'));
+$('#resetCancel').addEventListener('click', () => $('#resetModal').classList.remove('open'));
+$('#resetConfirm').addEventListener('click', () => {
+  state = defaultState();
+  saveState(state);
+  $('#resetModal').classList.remove('open');
+  render();
+});
+render();
+
+</script>
+</body>
+</html>
